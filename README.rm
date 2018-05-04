@@ -34,4 +34,9 @@ with InteractiveLabeler(label_name, type=MULTYCLASS) as labeler: #localhost:8085
 * stop (push from server, user pressed ctrl+C)
 
 
+==== TODO
+
+Figure out how to test current aiohttp version (latest in pip 3.0.0b1)
+
+
 
