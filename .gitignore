@@ -63,3 +63,4 @@ examples/diabetes.txt
 examples/heart.txt
 
 .pyenv
+*.code-workspace
