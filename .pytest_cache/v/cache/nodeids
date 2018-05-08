@@ -1,4 +1,3 @@
 [
-  "intlabeler/protocol/tests/test_dto.py::test_message_task",
-  "intlabeler/webserver/tests/test_webserver.py::test_hello[pyloop]"
+  "intlabeler/protocol/tests/test_dto.py::test_message_task"
 ]

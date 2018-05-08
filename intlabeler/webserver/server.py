@@ -1,8 +1,11 @@
+"""This module contains WebServer class
+    TODO
+"""
+
 import asyncio
 import datetime
 import logging
 import pathlib
-import aiohttp_debugtoolbar
 from aiohttp import web
 #from aiohttp.test_utils import unused_port
 
@@ -10,35 +13,38 @@ from aiohttp import web
 
 
 class WebServer:
-    def __init__(self, loop):
-        self.port = None
-        self.log = logging.getLogger()
+    """WebServer class doc TODO
+    """
+    def __init__(self, loop=None, host='127.0.0.1', port=8085, debugtoolbar=True):
+        """ Parameters
+            ----------
+            loop : asyncio event loop
+            host : string (optional, default is 127.0.0.1)
+            port : int (optional, default is 8085)
+            debugtoolbar : bool (default True) turn on aiohttp debugtoolbar
+        """
         self._loop = loop
+        self.host = host
+        self.port = port
+        self.log = logging.getLogger()
         self.app = web.Application(loop=self._loop)
         self.app['sockets'] = []
         self.app['solutions'] = {}
-        aiohttp_debugtoolbar.setup(self.app)
-        self.app.router.add_routes([web.get('/hello', self.handle),
-                                    web.get('/echo', self.wshandle),
-                                    web.get('/n/{name}', self.handle)])
+        if debugtoolbar:
+            import aiohttp_debugtoolbar
+            aiohttp_debugtoolbar.setup(self.app)
+        #setup handlers
+        self.app.router.add_routes([web.get('/echo', self.wshandle)])
         static_folder="frontend/dist"
         self.app.router.add_static('/', static_folder, name='static', show_index=True)
         #here = pathlib.Path(__file__)
 
     async def start(self):
-        port = 8085#unused_port()
         runner = web.AppRunner(self.app)
         await runner.setup()
-        site = web.TCPSite(runner, '127.0.0.1', port)
+        site = web.TCPSite(runner, self.host, self.port)
         await site.start()
-        #self._loop.create_task(self.ask_())
-        self.port = port
-        print("Server started on http://localhost:%s" % self.port)
-
-    async def handle(self, request):
-        name = request.match_info.get('name', "Anonymous")
-        text = "Hello, " + name + " " + str(self.port)
-        return web.Response(text=text)
+        print("Server started on http://%s:%s" % (self.host, self.port))
 
     async def wshandle(self, request):
         ws = web.WebSocketResponse()

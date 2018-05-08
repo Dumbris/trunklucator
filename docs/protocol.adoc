@@ -1,0 +1,20 @@
+:imagesdir: assets/images
+
+=== Clinet - Server protocol description
+
+[plantuml, diagram-classes2, png]
+....
+@startuml protocol_client_ask
+title List available tasks
+
+actor User as U
+participant "Web Client" as C
+participant "Embedded Server" as S
+
+U --> C: User push refresh button
+C -> S : list_tasks
+C <- S : list_tasks
+@enduml
+....
+
+// vim: set syntax=asciidoc:

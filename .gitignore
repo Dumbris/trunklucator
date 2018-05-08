@@ -64,3 +64,4 @@ examples/heart.txt
 
 .pyenv
 *.code-workspace
+.asciidoctor
