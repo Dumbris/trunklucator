@@ -1,5 +1,5 @@
 """This module contains WebServer class
-    TODO
+    TODO DOC
 """
 
 import asyncio
@@ -7,7 +7,6 @@ import datetime
 import logging
 import pathlib
 from aiohttp import web
-#from aiohttp.test_utils import unused_port
 
 
 
@@ -28,8 +27,10 @@ class WebServer:
         self.port = port
         self.log = logging.getLogger()
         self.app = web.Application(loop=self._loop)
+        #states
         self.app['sockets'] = []
         self.app['solutions'] = {}
+        #end of states
         if debugtoolbar:
             import aiohttp_debugtoolbar
             aiohttp_debugtoolbar.setup(self.app)
@@ -40,10 +41,7 @@ class WebServer:
         #here = pathlib.Path(__file__)
 
     async def start(self):
-        runner = web.AppRunner(self.app)
-        await runner.setup()
-        site = web.TCPSite(runner, self.host, self.port)
-        await site.start()
+        web.run_app(self.app, self.host, self.port)
         print("Server started on http://%s:%s" % (self.host, self.port))
 
     async def wshandle(self, request):
@@ -86,15 +84,6 @@ class WebServer:
         return res
 
 
-def entry_point():
-    aiothread = AioThread()
-    loop = aiothread.get_loop()
-    ws = WebServer(loop=loop)
-    aiothread.set_server(ws)
-    aiothread.start()
-    aiothread.event.wait()
-    return aiothread
-
 def run_fun(aiothread):
     #loop = aiothread.get_loop()
     timeout = 3000000
@@ -109,10 +98,3 @@ def run_fun(aiothread):
         future.cancel()
     except Exception as exc:
         print('The coroutine raised an exception: {!r}'.format(exc))
-
-
-if __name__ == '__main__':
-    aiothread = entry_point()
-    for i in range(3):
-        print(i)
-        run_fun(aiothread)

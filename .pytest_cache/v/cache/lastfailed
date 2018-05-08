@@ -1,3 +1,4 @@
 {
-  "intlabeler/webserver/tests/test_webserver.py": true
+  "intlabeler/webserver/test/test_webserver.py::test_hello[pyloop]": true,
+  "intlabeler/webserver/test/test_webserver2.py::test_hello[pyloop]": true
 }
