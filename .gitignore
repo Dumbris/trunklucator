@@ -65,3 +65,5 @@ examples/heart.txt
 .pyenv
 *.code-workspace
 .asciidoctor
+__pycache__
+.pytest_cache

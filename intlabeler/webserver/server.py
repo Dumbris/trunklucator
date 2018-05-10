@@ -7,6 +7,10 @@ import datetime
 import logging
 import pathlib
 from aiohttp import web
+import json
+
+import intlabeler.const.msg as const_msg
+import intlabeler.protocol.create as create
 
 
 
@@ -14,7 +18,7 @@ from aiohttp import web
 class WebServer:
     """WebServer class doc TODO
     """
-    def __init__(self, loop=None, host='127.0.0.1', port=8085, debugtoolbar=True):
+    def __init__(self, loop=None, host='127.0.0.1', port=8085, debugtoolbar=False):
         """ Parameters
             ----------
             loop : asyncio event loop
@@ -41,19 +45,35 @@ class WebServer:
         #here = pathlib.Path(__file__)
 
     async def start(self):
-        web.run_app(self.app, self.host, self.port)
+        web.run_app(self.app, host=self.host, port=self.port)
         print("Server started on http://%s:%s" % (self.host, self.port))
+
+    #TODO move to specific module
+    def client_error(self, msg):
+        return create.server_error(msg)
+
+    def client_msg(self, msg):
+        res = create.server_error("Nothing to do")
+        try:
+            data = json.loads(msg.data)
+        except Exception as e:
+            print(e)
+        if not const_msg.TYPE in data:
+            return create.server_error("{} field reqired".format(const_msg.TYPE))
+        return res
 
     async def wshandle(self, request):
         ws = web.WebSocketResponse()
         self.app["sockets"].append(ws)
         await ws.prepare(request)
-        await ws.send_str("Hello!")
+        #first message
+        #await ws.send_str(json.dumps({'command': 'tasks', 'user_name': '1'}))
         async for msg in ws:
             print(msg)
             if msg.type == web.WSMsgType.text:
                 self.app["solutions"]["1"] = msg.data
-                await ws.send_str("Hello, {}".format(msg.data))
+                reply = self.client_msg(msg)
+                await ws.send_str(json.dumps(reply.to_dict()))
             elif msg.type == web.WSMsgType.binary:
                 await ws.send_bytes(msg.data)
             elif msg.type == web.WSMsgType.close:
