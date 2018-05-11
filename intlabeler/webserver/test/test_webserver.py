@@ -14,6 +14,9 @@ import intlabeler.protocol.dto as dto
 
 WS_URL = '/echo/v1.0'
 
+def jd(msg : dto.Message):
+    return json.dumps(msg.to_dict())
+
 def fake_uuid():
     return patch.object(uuid, 'uuid4', side_effect=['15bfcc21-de44-47d9-9189-1f9f91453311'])
 
@@ -38,7 +41,16 @@ def create_solution():
     y = np.array([0,1,1])
     return dto.Solution(get_id(), y)
 
-async def test_hello(test_client, loop):
+def parse_msg(data) -> dto.Message:
+    try:
+        data_ = json.loads(data)
+        return dto.Message(**data_)
+    except TypeError as e:
+        raise e
+    except Exception as e:
+        raise e
+
+async def test_list_tasks(test_client, loop):
     ws = WebServer(loop=loop)
     task1 = create_task()
     ws.app["tasks"] = [task1]
@@ -47,22 +59,51 @@ async def test_hello(test_client, loop):
     async with client.ws_connect(WS_URL) as ws:
         req = dto.Message(const_msg.TYPE_LIST)
         await ws.send_str(json.dumps(req.to_dict()))
-        async for msg in ws:
-            print(msg)
-            if msg.type == web.WSMsgType.text:
-                #process(ws, json.loads(msg.data))
-                if msg.data[const_msg.TYPE] == const_msg.TYPE_LIST:
-                    tasks_list = msg.data[const_msg.PAYLOAD]
+        async for ws_msg in ws:
+            if ws_msg.type == web.WSMsgType.text:
+                msg = parse_msg(ws_msg.data)
+                if msg.type == const_msg.TYPE_LIST:
+                    tasks_list = msg.payload
                     assert len(tasks_list) == 2
-                if msg.data[const_msg.TYPE] == const_msg.TYPE_TASK:
-                    task2 = dto.Data(**msg.data[const_msg.PAYLOAD])
-                    assert task1 == task2
+                if msg.type == const_msg.TYPE_TASK:
+                    task2 = dto.Data(**msg.payload)
+                    assert task1.task_id == task2.task_id
                     reply = dto.Message(const_msg.TYPE_SOLUTION, create_solution(), msg_id=dto.get_id())
                 break
-            elif msg.type == web.WSMsgType.closed:
+            elif ws_msg.type == web.WSMsgType.closed:
                 ws.close()
                 print(':: closed')
                 break
-            elif msg.type == web.WSMsgType.error:
+            elif ws_msg.type == web.WSMsgType.error:
+                print(':: error')
+                break
+
+
+async def test_push_task(test_client, loop):
+    ws = WebServer(loop=loop)
+    task1 = create_task()
+    ws.app["tasks"] = [task1]
+    app = ws.app
+    client = await test_client(app)
+    async with client.ws_connect(WS_URL) as ws:
+        async for ws_msg in ws:
+            if ws_msg.type == web.WSMsgType.text:
+                msg = parse_msg(ws_msg.data)
+                if msg.type == const_msg.TYPE_ACK:
+                    assert msg.reply_id == dto.get_id()
+                    print(msg)
+                if msg.type == const_msg.TYPE_TASK:
+                    print(msg)
+                    task2 = dto.Data(**msg.payload)
+                    assert task1.task_id == task2.task_id
+                    assert len(task1.x) == len(task2.x)
+                    await asyncio.sleep(0.5)
+                    await ws.send_str(jd(dto.Message(const_msg.TYPE_SOLUTION, create_solution(), msg_id=dto.get_id())))
+                break
+            elif ws_msg.type == web.WSMsgType.closed:
+                ws.close()
+                print(':: closed')
+                break
+            elif ws_msg.type == web.WSMsgType.error:
                 print(':: error')
                 break

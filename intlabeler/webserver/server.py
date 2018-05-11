@@ -8,6 +8,7 @@ import logging
 import pathlib
 from aiohttp import web
 import json
+from typing import List
 
 import intlabeler.const.msg as const_msg
 import intlabeler.const.payload as const_pl
@@ -17,6 +18,9 @@ import intlabeler.protocol.dto as dto
 API_VERSION = 'v1.0'
 API_URL = '/echo' + '/' + API_VERSION
 
+
+def jd(msg : dto.Message):
+    return json.dumps(msg.to_dict())
 
 class WebServer:
     """WebServer class doc TODO
@@ -36,6 +40,7 @@ class WebServer:
         self.app = web.Application(loop=self._loop)
         #states
         self.app['sockets'] = []
+        self.app['tasks'] : List[dto.Data] = []
         self.app['solutions'] = {}
         #end of states
         if debugtoolbar:
@@ -53,7 +58,7 @@ class WebServer:
 
     #TODO move to specific module
     def list_tasks(self):
-        return [t[const_pl.TASK_ID] for t in self.app["tasks"]]
+        return [t.task_id for t in self.app["tasks"]]
     
     def get_task_byid(self, task_id: str):
         try:
@@ -61,22 +66,35 @@ class WebServer:
         except StopIteration:
             pass
         return False
+    
+    def get_nt_field(self, msg, field, default=None):
+        if msg and (field in msg):
+            return msg[field]
+        return default
+
+    def msg_push_task(self, reply_id=None):
+        task = None
+        if len(self.app["tasks"]) > 0:
+            task = self.app["tasks"][0]
+        return dto.Message(const_msg.TYPE_TASK, task, reply_id=reply_id)
+
 
     def client_msg(self, msg):
         res = dto.Message(const_msg.TYPE_ERROR, dto.Error("Nothing to do", None))
         try:
             data = json.loads(msg.data)
+            client_msg = dto.Message(**data)
+        except TypeError as e:
+            return dto.Message(const_msg.TYPE_ERROR, dto.Error(str(e), None), reply_id=data.get(const_msg.ID, None))
         except Exception as e:
             print(e)
-        if not const_msg.TYPE in data:
-            error_msg = "{} field reqired".format(const_msg.TYPE)
-            return dto.Message(const_msg.TYPE_ERROR, dto.Error(error_msg, None))
+            raise e
         #List tasks request
         if data[const_msg.TYPE] == const_msg.TYPE_LIST:
             return dto.Message(const_msg.TYPE_LIST, self.list_tasks())
         #Get task request
         if data[const_msg.TYPE] == const_msg.TYPE_TASK:
-            return dto.Message(const_msg.TYPE_TASK, self.list_tasks(), reply_id=data[const_msg.ID])
+            return self.msg_push_task(data)
         #Client post solution
         if data[const_msg.TYPE] == const_msg.TYPE_SOLUTION:
             #create solution
@@ -100,8 +118,8 @@ class WebServer:
         ws = web.WebSocketResponse()
         self.app["sockets"].append(ws)
         await ws.prepare(request)
-        #first message
-        #await ws.send_str(json.dumps({'command': 'tasks', 'user_name': '1'}))
+        #first message - push task if exists
+        await ws.send_str(jd(self.msg_push_task()))
         async for msg in ws:
             if msg.type == web.WSMsgType.text:
                 reply = self.client_msg(msg)
