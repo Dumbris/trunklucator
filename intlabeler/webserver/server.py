@@ -54,6 +54,13 @@ class WebServer:
     #TODO move to specific module
     def list_tasks(self):
         return [t[const_pl.TASK_ID] for t in self.app["tasks"]]
+    
+    def get_task_byid(self, task_id: str):
+        try:
+            return next(t for t in self.app["tasks"] if t[const_pl.TASK_ID] == task_id)
+        except StopIteration:
+            pass
+        return False
 
     def client_msg(self, msg):
         res = dto.Message(const_msg.TYPE_ERROR, dto.Error("Nothing to do", None))
@@ -64,9 +71,29 @@ class WebServer:
         if not const_msg.TYPE in data:
             error_msg = "{} field reqired".format(const_msg.TYPE)
             return dto.Message(const_msg.TYPE_ERROR, dto.Error(error_msg, None))
+        #List tasks request
         if data[const_msg.TYPE] == const_msg.TYPE_LIST:
-            if len(self.app['tasks']) > 0:
-                return dto.Message(const_msg.TYPE_LIST, self.list_tasks())
+            return dto.Message(const_msg.TYPE_LIST, self.list_tasks())
+        #Get task request
+        if data[const_msg.TYPE] == const_msg.TYPE_TASK:
+            return dto.Message(const_msg.TYPE_TASK, self.list_tasks(), reply_id=data[const_msg.ID])
+        #Client post solution
+        if data[const_msg.TYPE] == const_msg.TYPE_SOLUTION:
+            #create solution
+            try:
+                sol = dto.Solution(**data[const_msg.PAYLOAD])
+            except TypeError as e:
+                return dto.Message(const_msg.TYPE_ERROR, dto.Error(str(e), None), reply_id=data[const_msg.ID])
+            except Exception as e:
+                print(e)
+                return dto.Message(const_msg.TYPE_ERROR, dto.Error("Exception occured", None), reply_id=data[const_msg.ID])
+            if sol:
+                task = self.get_task_byid(sol.task_id)
+                if task:
+                    return dto.Message(const_msg.TYPE_ACK, reply_id=data[const_msg.ID])
+            error_msg = "{} task not found".format(sol.task_id)
+            return dto.Message(const_msg.TYPE_ERROR, dto.Error(error_msg, None), reply_id=data[const_msg.ID])
+
         return res
 
     async def wshandle(self, request):
@@ -77,7 +104,6 @@ class WebServer:
         #await ws.send_str(json.dumps({'command': 'tasks', 'user_name': '1'}))
         async for msg in ws:
             if msg.type == web.WSMsgType.text:
-                self.app["solutions"]["1"] = msg.data
                 reply = self.client_msg(msg)
                 print(reply.to_dict())
                 await ws.send_str(json.dumps(reply.to_dict()))

@@ -21,6 +21,11 @@ class Data(namedtuple("Data", [ payload.TASK_ID,
                               ]), AsDict):
     pass
 
+class Solution(namedtuple("Solution", [ payload.TASK_ID, 
+                                        payload.Y, 
+                                      ]), AsDict):
+    pass
+
 class Error(namedtuple("Error", [ const_msg.ERROR_TITLE, 
                                   const_msg.ERROR_DESC, 
                               ]), AsDict):
