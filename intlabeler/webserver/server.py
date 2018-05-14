@@ -62,9 +62,11 @@ class WebServer:
     
     def get_task_byid(self, task_id: str):
         try:
-            return next(t for t in self.app["tasks"] if t[const_pl.TASK_ID] == task_id)
+            return next(t for t in self.app["tasks"] if t.task_id == task_id)
         except StopIteration:
             pass
+        except Exception as e:
+            print(e)
         return False
     
     def get_nt_field(self, msg, field, default=None):
@@ -90,13 +92,13 @@ class WebServer:
             print(e)
             raise e
         #List tasks request
-        if data[const_msg.TYPE] == const_msg.TYPE_LIST:
+        if client_msg.type == const_msg.TYPE_LIST:
             return dto.Message(const_msg.TYPE_LIST, self.list_tasks())
         #Get task request
-        if data[const_msg.TYPE] == const_msg.TYPE_TASK:
+        if client_msg.type == const_msg.TYPE_TASK:
             return self.msg_push_task(data)
         #Client post solution
-        if data[const_msg.TYPE] == const_msg.TYPE_SOLUTION:
+        if client_msg.type == const_msg.TYPE_SOLUTION:
             #create solution
             try:
                 sol = dto.Solution(**data[const_msg.PAYLOAD])
@@ -104,7 +106,7 @@ class WebServer:
                 return dto.Message(const_msg.TYPE_ERROR, dto.Error(str(e), None), reply_id=data[const_msg.ID])
             except Exception as e:
                 print(e)
-                return dto.Message(const_msg.TYPE_ERROR, dto.Error("Exception occured", None), reply_id=data[const_msg.ID])
+                return dto.Message(const_msg.TYPE_ERROR, dto.Error("An exception occured", None), reply_id=data[const_msg.ID])
             if sol:
                 task = self.get_task_byid(sol.task_id)
                 if task:
@@ -123,7 +125,7 @@ class WebServer:
         async for msg in ws:
             if msg.type == web.WSMsgType.text:
                 reply = self.client_msg(msg)
-                print(reply.to_dict())
+                #print(reply.to_dict())
                 await ws.send_str(json.dumps(reply.to_dict()))
             elif msg.type == web.WSMsgType.binary:
                 await ws.send_bytes(msg.data)
