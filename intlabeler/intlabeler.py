@@ -3,8 +3,14 @@
 This module includes an InteractiveLabeler.
 """
 
+import asyncio
+from intlabeler.webserver.server import WebServer
+from intlabeler.webserver.aiothread import AioThread
 
-class MyInteractiveLabeler:
+
+TIMEOUT = 3000 #Do we really need it?
+
+class InteractiveLabeler:
 
     """Interactive Labeler
 
@@ -20,10 +26,25 @@ class MyInteractiveLabeler:
 
     """
 
-    def __init__(self, **kwargs):
-        self.label_name = kwargs.pop('label_name', None)
+    def __init__(self, *args, **kwargs):
+        self.aiothread = AioThread()
+        self.loop = self.aiothread.get_loop()
+        self.ws = WebServer(loop=self.loop, *args, **kwargs)
+        self.aiothread.set_server(self.ws)
+        self.aiothread.start()
+        self.aiothread.event.wait()
 
-    @inherit_docstring_from(Labeler)
-    def label(self, feature):
-        plt.imshow(feature, cmap=plt.cm.gray_r, interpolation='nearest')
-        plt.draw()
+    def make_query(self, X, label_name, title, task_type, y):
+        #add task
+        #loop = aiothread.get_loop()
+        coro = self.aiothread.server.do_some_work(4)
+        future = self.aiothread.add_task(coro)
+        #Make sure you wait for loop to start. Calling future.cancel() in main thread will cancel asyncio coroutine in background thread.
+        try:
+            result = future.result(TIMEOUT)
+            print(result)
+        except asyncio.TimeoutError:
+            print('The coroutine took too long, cancelling the task')
+            future.cancel()
+        except Exception as exc:
+            print('The coroutine raised an exception: {!r}'.format(exc))

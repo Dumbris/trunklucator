@@ -1,5 +1,6 @@
 import asyncio
 from threading import Thread, Event
+import logging
 
 
 class AioThread(Thread):

@@ -52,9 +52,17 @@ class WebServer:
         self.app.router.add_static('/', static_folder, name='static', show_index=True)
         #here = pathlib.Path(__file__)
 
-    async def start(self):
+    async def start2(self):
         web.run_app(self.app, host=self.host, port=self.port)
         print("Server started on http://%s:%s" % (self.host, self.port))
+
+    async def start(self):
+        runner = web.AppRunner(self.app)
+        await runner.setup()
+        site = web.TCPSite(runner, host=self.host, port=self.port)
+        await site.start()
+        #self._loop.create_task(self.ask_())
+        print("Server started on http://localhost:%s" % self.port)
 
     #TODO move to specific module
     def list_tasks(self):
@@ -146,7 +154,7 @@ class WebServer:
                     res = self.app['solutions']['1']
                     self.app['solutions']['1'] = False
                     return res
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1.5)
 
     async def do_some_work(self, x):
         res = None
@@ -155,19 +163,3 @@ class WebServer:
         except Exception as e:
             print(e)
         return res
-
-
-def run_fun(aiothread):
-    #loop = aiothread.get_loop()
-    timeout = 3000000
-    coro = aiothread.server.do_some_work(4)
-    future = aiothread.add_task(coro)
-    #Make sure you wait for loop to start. Calling future.cancel() in main thread will cancel asyncio coroutine in background thread.
-    try:
-        result = future.result(timeout)
-        print(result)
-    except asyncio.TimeoutError:
-        print('The coroutine took too long, cancelling the task')
-        future.cancel()
-    except Exception as exc:
-        print('The coroutine raised an exception: {!r}'.format(exc))
