@@ -29,12 +29,6 @@ def jd(msg : dto.Message):
 def fake_uuid():
     return patch.object(uuid, 'uuid4', side_effect=['15bfcc21-de44-47d9-9189-1f9f91453311'])
 
-def process(ws, data):
-    print(':: response:')
-    pprint(data)
-    print()
-    # ws.send_str(input('> '))
-
 def get_id():
     with fake_uuid():
         return dto.get_id()
@@ -59,36 +53,6 @@ def parse_msg(data) -> dto.Message:
     except Exception as e:
         raise e
 
-@pytest.mark.skip(reason="no way of currently testing this")
-async def test_list_tasks(test_client, loop):
-    ws = WebServer(loop=loop)
-    task1 = create_task()
-    ws.app["tasks"] = [task1]
-    app = ws.app
-    client = await test_client(app)
-    solution_id = dto.get_id()
-    async with client.ws_connect(WS_URL) as ws:
-        req = dto.Message(const_msg.TYPE_LIST)
-        await ws.send_str(json.dumps(req.to_dict()))
-        async for ws_msg in ws:
-            if ws_msg.type == web.WSMsgType.text:
-                msg = parse_msg(ws_msg.data)
-                if msg.type == const_msg.TYPE_LIST:
-                    tasks_list = msg.payload
-                    assert len(tasks_list) == 2
-                if msg.type == const_msg.TYPE_TASK:
-                    task2 = dto.Data(**msg.payload)
-                    assert task1.task_id == task2.task_id
-                    reply = dto.Message(const_msg.TYPE_SOLUTION, create_solution(), msg_id=solution_id)
-                break
-            elif ws_msg.type == web.WSMsgType.closed:
-                ws.close()
-                print(':: closed')
-                break
-            elif ws_msg.type == web.WSMsgType.error:
-                print(':: error')
-                break
-
 
 async def read_msg(ws, proto_msg_type: str, ws_msg_type: int = web.WSMsgType.text):
     ws_msg = await ws.receive()
@@ -102,7 +66,7 @@ async def read_msg(ws, proto_msg_type: str, ws_msg_type: int = web.WSMsgType.tex
 async def test_push_task(test_client, loop):
     ws = WebServer(loop=loop)
     task1 = create_task()
-    ws.app["tasks"] = [task1]
+    ws.add_task(task1)
     app = ws.app
     client = await test_client(app)
     async with client.ws_connect(WS_URL) as ws:

@@ -7,6 +7,10 @@ import asyncio
 from intlabeler.webserver.server import WebServer
 from intlabeler.webserver.aiothread import AioThread
 
+import intlabeler.protocol.dto as dto
+import intlabeler.const.msg as const_msg
+import intlabeler.const.task_types as const_ttype
+
 
 TIMEOUT = 3000 #Do we really need it?
 
@@ -35,9 +39,9 @@ class InteractiveLabeler:
         self.aiothread.event.wait()
 
     def make_query(self, X, label_name, title, task_type, y):
-        #add task
-        #loop = aiothread.get_loop()
-        coro = self.aiothread.server.do_some_work(4)
+        #create task object
+        task_data = dto.Data(dto.get_id(), X, label_name, title, task_type, y)
+        coro = self.aiothread.server.add_task(task_data)
         future = self.aiothread.add_task(coro)
         #Make sure you wait for loop to start. Calling future.cancel() in main thread will cancel asyncio coroutine in background thread.
         try:

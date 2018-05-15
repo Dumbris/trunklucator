@@ -6,7 +6,6 @@ REPLY_ID = 'reply_id'
 #Json protocol type field
 TYPE_ERROR = 'error'
 TYPE_TASK = 'task'
-TYPE_LIST = 'list'
 TYPE_SOLUTION = 'solution'
 TYPE_ACK = 'ack'
 TYPE_UPDATE = 'update'
