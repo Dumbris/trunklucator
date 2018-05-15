@@ -9,7 +9,8 @@ def simple():
     y = np.array([0,1,0])
     label_name = ['Y', 'N']
     il = InteractiveLabeler()
-    il.make_query(X,label_name, "Simple test", const_ttype.BINARY, y)
+    y_ = il.make_query(X,label_name, "Simple test", const_ttype.BINARY, y)
+    print(y_)
 
 
 

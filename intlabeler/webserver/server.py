@@ -49,15 +49,14 @@ class WebServer:
         self.app['sockets'] = []
         #self.app['tasks'] : List[dto.Data] = []
         self.app['task'] : dto.Data = None
-        self.app['task_future'] = None
-        self.app['solution'] = None
+        self.app['solution_event'] = None
         #end of states
         if debugtoolbar:
             import aiohttp_debugtoolbar
             aiohttp_debugtoolbar.setup(self.app)
         #setup handlers
         self.app.router.add_routes([web.get(API_URL, self.wshandle)])
-        static_folder="frontend/dist"
+        static_folder="frontend/dist_simple"
         self.app.router.add_static('/', static_folder, name='static', show_index=True)
         #here = pathlib.Path(__file__)
 
@@ -112,10 +111,9 @@ class WebServer:
                 task = self.app["task"]
                 if task and task.task_id == sol.task_id:
                     self.app["solution"] = sol
-                    future = self.app["task_future"]
-                    assert future
-                    future.set_result(sol)
-                    future.done()
+                    #assert self.app["solution_event"]
+                    if self.app["solution_event"]:
+                        self.app["solution_event"].set()
                     return dto.Message(const_msg.TYPE_ACK, reply_id=data[const_msg.ID])
             error_msg = "{} task not found".format(sol.task_id)
             return dto.Message(const_msg.TYPE_ERROR, dto.Error(error_msg, None), reply_id=data[const_msg.ID])
@@ -130,6 +128,8 @@ class WebServer:
         try:
             await ws.send_str(jd(self.msg_push_task()))
             async for msg in ws:
+                if PRINT_MSG:
+                    print("\n--> {}".format(msg))
                 if msg.type == web.WSMsgType.text:
                     reply = self.client_msg(msg)
                     #print(reply.to_dict())
@@ -149,15 +149,15 @@ class WebServer:
         #broadcast task data to clients
         for ws in self.app['sockets']:
             await ws.send_str(jd(self.msg_push_task()))
-        #wait for solution
-        #TODO use syncronization primitives here
-        while True:
-            sol = self.app['solution']
-            if sol and sol.task_id == task_data.task_id:
-                self.app['solution'] = None
-                self.app["task"] = None
-                return sol
-            await asyncio.sleep(0.5)
+        #wait for solution event
+        self.app['solution_event'] = asyncio.Event()
+        print('waiting for solution event\n\n')
+        await self.app['solution_event'].wait()
+        print('solution event triggered\n\n')
+        sol = self.app['solution']
+        self.app['solution'] = None
+        self.app["task"] = None
+        return sol
 
     async def add_task(self, task_data: dto.Data):
         res = None

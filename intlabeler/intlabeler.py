@@ -12,7 +12,7 @@ import intlabeler.const.msg as const_msg
 import intlabeler.const.task_types as const_ttype
 
 
-TIMEOUT = 3000 #Do we really need it?
+TIMEOUT = 9000 #Do we really need it?
 
 class InteractiveLabeler:
 
@@ -46,9 +46,10 @@ class InteractiveLabeler:
         #Make sure you wait for loop to start. Calling future.cancel() in main thread will cancel asyncio coroutine in background thread.
         try:
             result = future.result(TIMEOUT)
-            print(result)
+            return result.y
         except asyncio.TimeoutError:
             print('The coroutine took too long, cancelling the task')
             future.cancel()
         except Exception as exc:
             print('The coroutine raised an exception: {!r}'.format(exc))
+        

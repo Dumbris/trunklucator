@@ -66,7 +66,8 @@ async def read_msg(ws, proto_msg_type: str, ws_msg_type: int = web.WSMsgType.tex
 async def test_push_task(test_client, loop):
     ws = WebServer(loop=loop)
     task1 = create_task()
-    ws.add_task(task1)
+    #await ws.add_task(task1)
+    ws.app["task"] = task1
     app = ws.app
     client = await test_client(app)
     async with client.ws_connect(WS_URL) as ws:

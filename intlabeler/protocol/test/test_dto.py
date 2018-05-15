@@ -24,8 +24,3 @@ def test_message_task():
     with fake_uuid():
         t = dto.Message(const_msg.TYPE_TASK, dto.Data(dto.get_id(), X, label_name, "Test data 1", const_ttype.BINARY, y))
     assert json.dumps(t.to_dict(), sort_keys=True) == MSG_TASK1
-
-def test_message_list():
-    with fake_uuid():
-        t = dto.Message(const_msg.TYPE_LIST, msg_id=dto.get_id())
-    assert json.dumps(t.to_dict(), sort_keys=True) == MSG_LIST1
