@@ -2,11 +2,13 @@
 
 This module includes an InteractiveLabeler.
 """
-import matplotlib.pyplot as plt
-from six.moves import input
+#import matplotlib.pyplot as plt
+#from six.moves import input
 
 from libact.base.interfaces import Labeler
 from libact.utils import inherit_docstring_from
+from intlabeler.intlabeler import InteractiveLabeler
+import intlabeler.const.task_types as const_ttype
 
 
 class MyInteractiveLabeler(Labeler):
@@ -27,21 +29,12 @@ class MyInteractiveLabeler(Labeler):
 
     def __init__(self, **kwargs):
         self.label_name = kwargs.pop('label_name', None)
+        self.il = InteractiveLabeler()
 
     @inherit_docstring_from(Labeler)
     def label(self, feature):
-        plt.imshow(feature, cmap=plt.cm.gray_r, interpolation='nearest')
-        plt.draw()
-
-        banner = "Hello! Enter the associated label with the image: "
-
-        if self.label_name is not None:
-            banner += str(self.label_name) + ' '
-
-        lbl = input(banner)
-
-        while (self.label_name is not None) and (lbl not in self.label_name):
-            print('Invalid label, please re-enter the associated label.')
-            lbl = input(banner)
-
+        title = 'N - alt.atheism, Y - sci.space'
+        label_name = ['Y', 'N']
+        print(feature)
+        lbl = self.il.make_query(feature, label_name, title, const_ttype.BINARY, None)
         return self.label_name.index(lbl)

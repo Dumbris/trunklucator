@@ -44,7 +44,9 @@ https://www.jsonschema.net/
 https://github.com/aromanovich/jsl
 https://github.com/Julian/jsonschema
 
-3) Is it better to use https://github.com/ltworf/typedload like TDO classes?
+3) Is it better to use https://github.com/ltworf/typedload like TDO classes? 
+
+4) Graceful shutdown embedded server after main thread was exited
 
 
 

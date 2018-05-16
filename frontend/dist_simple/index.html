@@ -1,7 +1,7 @@
 <div id="app">
-  <h1>Welcome</h1>
+  <h1>{{data.title}}</h1>
   <pre>{{state}}</pre>
-  <pre>{{data}}</pre>
+  <pre>{{data.x}}</pre>
   <button v-on:click="send(1)">Yes</button>
   <button v-on:click="send(0)">No</button>
 
@@ -62,7 +62,7 @@
       var sol = {"type": "solution", 
             "payload": 
               {"task_id": this.data["task_id"], 
-              "y": [0, 1, 1]
+              "y": decision
               }, 
               "reply_id": null, 
               "msg_id": "751e1a72-3063-463a-9194-ca95ef68feaf"
