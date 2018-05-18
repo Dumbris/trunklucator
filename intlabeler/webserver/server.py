@@ -45,6 +45,7 @@ class WebServer:
         self.port = port
         self.log = logging.getLogger()
         self.app = web.Application(loop=self._loop)
+        self.app_runner = None
         #states
         self.app['sockets'] = []
         #self.app['tasks'] : List[dto.Data] = []
@@ -65,12 +66,15 @@ class WebServer:
         print("Server started on http://%s:%s" % (self.host, self.port))
 
     async def start(self):
-        runner = web.AppRunner(self.app)
-        await runner.setup()
+        self.app_runner = web.AppRunner(self.app)
+        await self.app_runner.setup()
         site = web.TCPSite(runner, host=self.host, port=self.port)
         await site.start()
         #self._loop.create_task(self.ask_())
         print("Server started on http://localhost:%s" % self.port)
+
+    async def stop(self):
+        await self.app_runner.cleanup()
 
     def get_nt_field(self, msg, field, default=None):
         if msg and (field in msg):

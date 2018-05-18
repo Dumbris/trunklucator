@@ -33,5 +33,8 @@ class AioThread(Thread):
         return fut
 
     def finalize(self):
+        if self.server:
+            future = asyncio.run_coroutine_threadsafe(self.server.stop, loop=self._loop)
+            future.result()  # wait for results        
         self._loop.call_soon_threadsafe(self._loop.stop)
         self.join()
