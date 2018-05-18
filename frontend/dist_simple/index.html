@@ -45,6 +45,9 @@
       if (("type" in msg) && (msg["type"] == "task")) {
         self.setTask(msg["payload"])
       }
+      if (("type" in msg) && (msg["type"] == "stop")) {
+        self.setTask({"x":"stop"})
+      }
       };
       //socket closed callback
       websocket.onclose = function () {

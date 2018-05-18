@@ -10,7 +10,8 @@ from libact.models import LogisticRegression as LibActLogReg
 from libact.query_strategies import UncertaintySampling
 from libact.base.dataset import Dataset
 from libact.query_strategies import UncertaintySampling, RandomSampling
-from my_interactive_labeler import MyInteractiveLabeler
+from intlabeler.intlabeler import InteractiveLabeler
+import intlabeler.const.task_types as const_ttype
 
 cats = ['alt.atheism', 'sci.space']
 
@@ -56,17 +57,19 @@ model = LibActLogReg()
 qs = UncertaintySampling(trn_ds, method='lc', model=LibActLogReg())
 E_out1 = []
 
+quota = 3
+title = 'N - alt.atheism, Y - sci.space'
+label_name = ['Y', 'N']
 # Give each label its name (labels are from 0 to n_classes-1)
-lbr = MyInteractiveLabeler(label_name=[0,1])
-quota = 10
-for i in range(quota):
-    ask_id = qs.make_query()
-    lb = lbr.label(train_dataset.data[ask_id])
-    print(lb)
-    print(type(lb))
-    trn_ds.update(ask_id, lb)
-    model.train(trn_ds)
-    print(model.score(tst_ds))
-    E_out1 = np.append(E_out1, 1 - model.score(tst_ds))
+with InteractiveLabeler() as il:
+    for i in range(quota):
+        ask_id = qs.make_query()
+        lb = il.make_query(train_dataset.data[ask_id], label_name, title, const_ttype.BINARY, None)
+        print(lb)
+        print(type(lb))
+        trn_ds.update(ask_id, lb)
+        model.train(trn_ds)
+        print(model.score(tst_ds))
+        E_out1 = np.append(E_out1, 1 - model.score(tst_ds))
 
 print(E_out1)

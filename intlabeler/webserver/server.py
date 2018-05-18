@@ -68,12 +68,15 @@ class WebServer:
     async def start(self):
         self.app_runner = web.AppRunner(self.app)
         await self.app_runner.setup()
-        site = web.TCPSite(runner, host=self.host, port=self.port)
+        site = web.TCPSite(self.app_runner, host=self.host, port=self.port)
         await site.start()
+        self.app['solution_event'] = asyncio.Event()
         #self._loop.create_task(self.ask_())
         print("Server started on http://localhost:%s" % self.port)
 
     async def stop(self):
+        for ws in self.app['sockets']:
+            await ws.send_str(jd(dto.Message(const_msg.TYPE_STOP)))
         await self.app_runner.cleanup()
 
     def get_nt_field(self, msg, field, default=None):
@@ -115,9 +118,8 @@ class WebServer:
                 task = self.app["task"]
                 if task and task.task_id == sol.task_id:
                     self.app["solution"] = sol
-                    #assert self.app["solution_event"]
-                    if self.app["solution_event"]:
-                        self.app["solution_event"].set()
+                    assert not self.app["solution_event"].is_set()
+                    self.app["solution_event"].set()
                     return dto.Message(const_msg.TYPE_ACK, reply_id=data[const_msg.ID])
             error_msg = "{} task not found".format(sol.task_id)
             return dto.Message(const_msg.TYPE_ERROR, dto.Error(error_msg, None), reply_id=data[const_msg.ID])
@@ -144,6 +146,7 @@ class WebServer:
                     break
         finally:
             #await asyncio.shield()
+            await ws.close()
             pass
         return ws
 
@@ -154,7 +157,7 @@ class WebServer:
         for ws in self.app['sockets']:
             await ws.send_str(jd(self.msg_push_task()))
         #wait for solution event
-        self.app['solution_event'] = asyncio.Event()
+        self.app['solution_event'].clear()
         print('waiting for solution event\n\n')
         await self.app['solution_event'].wait()
         print('solution event triggered\n\n')
