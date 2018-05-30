@@ -47,6 +47,7 @@
       }
       if (("type" in msg) && (msg["type"] == "stop")) {
         self.setTask({"x":"stop"})
+        //websocket.close();
       }
       };
       //socket closed callback

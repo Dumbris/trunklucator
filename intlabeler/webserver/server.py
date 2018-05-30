@@ -7,8 +7,10 @@ import datetime
 import logging
 import pathlib
 from aiohttp import web
+from aiohttp import WSCloseCode
 import json
 from typing import List
+import weakref
 
 import intlabeler.const.msg as const_msg
 import intlabeler.const.payload as const_pl
@@ -19,6 +21,8 @@ API_VERSION = 'v1.0'
 API_URL = '/echo' + '/' + API_VERSION
 
 PRINT_MSG = True
+
+KEY_SOCKETS = 'sockets'
 
 def prt_msg(str_:str):
     print("<-- {}".format(str_))
@@ -47,7 +51,7 @@ class WebServer:
         self.app = web.Application(loop=self._loop)
         self.app_runner = None
         #states
-        self.app['sockets'] = []
+        self.app[KEY_SOCKETS] = weakref.WeakSet()
         #self.app['tasks'] : List[dto.Data] = []
         self.app['task'] : dto.Data = None
         self.app['solution_event'] = None
@@ -66,6 +70,9 @@ class WebServer:
         print("Server started on http://%s:%s" % (self.host, self.port))
 
     async def start(self):
+        #set up handlers
+        self.app.on_shutdown.append(self.on_shutdown)
+
         self.app_runner = web.AppRunner(self.app)
         await self.app_runner.setup()
         site = web.TCPSite(self.app_runner, host=self.host, port=self.port)
@@ -128,7 +135,7 @@ class WebServer:
 
     async def wshandle(self, request):
         ws = web.WebSocketResponse()
-        self.app["sockets"].append(ws)
+        request.app[KEY_SOCKETS].add(ws)
         await ws.prepare(request)
         #first message - push task if exists
         try:
@@ -142,19 +149,25 @@ class WebServer:
                     await ws.send_str(jd(reply))
                 elif msg.type == web.WSMsgType.binary:
                     await ws.send_bytes(msg.data)
-                elif msg.type == web.WSMsgType.close:
-                    break
+                #elif msg.type == web.WSMsgType.close:
+                #    break
         finally:
             #await asyncio.shield()
+            request.app[KEY_SOCKETS].discard(ws)
             await ws.close()
-            pass
         return ws
+
+    async def on_shutdown(self, app):
+        print("on_shutdown")
+        for ws in set(app[KEY_SOCKETS]):
+            await ws.close(code=WSCloseCode.GOING_AWAY, message='Server shutdown')
+
 
     async def add_task_(self, task_data: dto.Data):
         assert self.app.loop, "Server not started properly"
         self.app["task"] = task_data
         #broadcast task data to clients
-        for ws in self.app['sockets']:
+        for ws in self.app[KEY_SOCKETS]:
             await ws.send_str(jd(self.msg_push_task()))
         #wait for solution event
         self.app['solution_event'].clear()

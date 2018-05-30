@@ -1,6 +1,7 @@
 import asyncio
 from threading import Thread, Event
 import logging
+from intlabeler.webserver.timer import Timed
 
 
 class AioThread(Thread):
@@ -35,6 +36,8 @@ class AioThread(Thread):
     def finalize(self):
         if self.server:
             future = asyncio.run_coroutine_threadsafe(self.server.stop(), loop=self._loop)
-            future.result()  # wait for results        
-        self._loop.call_soon_threadsafe(self._loop.stop)
-        self.join()
+            with Timed():
+                future.result()  # wait for results        
+        with Timed():
+            self._loop.call_soon_threadsafe(self._loop.stop)
+            self.join()
