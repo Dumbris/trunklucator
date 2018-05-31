@@ -8,6 +8,20 @@
             "type": "shell",
             "command": "PYTHONPATH=./:$PYTHONPATH .pyenv/bin/python examples/20newsgroups.py",
             "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "build",
+            "path": "frontend/vue_ts_classification/",
+            "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "build-dev",
+            "path": "frontend/vue_ts_classification/",
+            "problemMatcher": [
+                "$tsc"
+            ]
         }
     ]
 }

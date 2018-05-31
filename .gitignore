@@ -67,3 +67,4 @@ examples/heart.txt
 .asciidoctor
 __pycache__
 .pytest_cache
+node_modules
