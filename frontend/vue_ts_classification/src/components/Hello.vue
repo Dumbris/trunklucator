@@ -2,7 +2,7 @@
 
 <template lang="pug">
     <div>
-        <div class="greeting">Hello {{name}}{{exclamationMarks}}</div>
+        <div :class="$style.greeting">Hello {{name}}{{exclamationMarks}}</div>
         <button @click="decrement">-</button>
         <button @click="increment">+</button>
     </div>
@@ -34,7 +34,7 @@ export default Vue.extend({
 });
 </script>
 
-<style>
+<style  module>
 .greeting {
     font-size: 30px;
 }

@@ -1,5 +1,9 @@
 import Vue from "vue";
 import HelloComponent from "./components/Hello.vue";
+import VueNativeSock from './components/websocket/Main';
+Vue.use(VueNativeSock, 'ws://localhost:9090', { format: 'json' } )
+
+Vue.use(VueNativeSock, 'ws://localhost:9090', { format: 'json' })
 
 let v = new Vue({
     el: "#app",

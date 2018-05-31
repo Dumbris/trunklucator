@@ -1,6 +1,8 @@
 var path = require('path')
 var webpack = require('webpack')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
+var MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const api_url = 'ws://localhost:8085';
 
 module.exports = {
   entry: './src/index.ts',
@@ -10,7 +12,10 @@ module.exports = {
     filename: 'build.js'
   },
   plugins: [
-    new VueLoaderPlugin()
+    new VueLoaderPlugin(),
+    new MiniCssExtractPlugin({
+      filename: 'style.css'
+    })
   ],
   module: {
     rules: [
@@ -46,16 +51,16 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          {
-            loader: 'vue-style-loader'
-          },
-          {
-            loader: 'css-loader',
-            options: {
-              modules: true,
-              localIdentName: '[local]_[hash:base64:8]'
-            }
-          }
+            process.env.NODE_ENV !== 'production'
+              ? 'vue-style-loader'
+              : MiniCssExtractPlugin.loader,
+              {
+                loader: 'css-loader',
+                options: {
+                  modules: true,
+                  localIdentName: '[local]_[hash:base64:8]'
+                }
+              }
         ]
       },
       {
@@ -82,7 +87,16 @@ module.exports = {
   },
   devServer: {
     historyApiFallback: true,
-    noInfo: true
+    noInfo: true,
+    proxy: {
+        logLevel: 'debug',
+        '/echo/*': {
+        target: api_url,
+        ws: true,
+        changeOrigin:true,
+        secure: false
+        },
+    }
   },
   performance: {
     hints: false

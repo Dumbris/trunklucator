@@ -6,7 +6,7 @@
         "noImplicitReturns": true,
         "module": "es2015",
         "moduleResolution": "node",
-        "target": "es5"
+        "target": "ESNEXT"
     },
     "include": [
         "./src/**/*"
