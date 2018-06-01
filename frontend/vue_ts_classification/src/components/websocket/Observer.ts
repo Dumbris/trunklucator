@@ -12,7 +12,7 @@ export default class {
   reconnectTimeoutId: NodeJS.Timer
   reconnectionCount: number = 0
   store: any
-  WebSocket: WebSocket | undefined;
+  WebSocket!: WebSocket;
 
   constructor (connectionUrl: string, opts: Opts = {}) {
     if (opts.format) {
@@ -33,9 +33,9 @@ export default class {
     this.onEvent()
   }
 
-  connect (connectionUrl: string, opts: Opts = {}) {
+  connect (connectionUrl: string, opts: Opts = {}, websocket = undefined) {
     let protocol: string = String(opts.protocol) || ''
-    this.WebSocket = opts.WebSocket || (protocol === '' ? new WebSocket(connectionUrl) : new WebSocket(connectionUrl, protocol))
+    this.WebSocket = websocket || (protocol === '' ? new WebSocket(connectionUrl) : new WebSocket(connectionUrl, protocol))
     if (this.format === 'json') {
       if (!('sendObj' in this.WebSocket)) {
         this.WebSocket.sendObj = (obj) => this.WebSocket.send(JSON.stringify(obj))
@@ -63,7 +63,7 @@ export default class {
 
   onEvent () {
     ['onmessage', 'onclose', 'onerror', 'onopen'].forEach((eventType) => {
-      this.WebSocket[eventType] = (event) => {
+      this.WebSocket[eventType] = (event: Event) => {
         Emitter.emit(eventType, event)
 
         if (this.store) { this.passToStore('SOCKET_' + eventType, event) }
@@ -75,7 +75,7 @@ export default class {
     })
   }
 
-  passToStore (eventName, event) {
+  passToStore (eventName: string, event: MessageEvent) {
     if (!eventName.startsWith('SOCKET_')) { return }
     let method = 'commit'
     let target = eventName.toUpperCase()
