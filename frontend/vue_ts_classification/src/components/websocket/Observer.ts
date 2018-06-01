@@ -1,15 +1,30 @@
 import Emitter from './Emitter'
 
+type Opts = {[key:string]: string | number | boolean | WebSocket}
+
 export default class {
-  constructor (connectionUrl, opts = {}) {
-    this.format = opts.format && opts.format.toLowerCase()
+  format: string = '';
+  connectionUrl: string;
+  opts: Opts;
+  reconnection: boolean = false
+  reconnectionAttempts: number = Infinity
+  reconnectionDelay: number = 1000
+  reconnectTimeoutId: NodeJS.Timer
+  reconnectionCount: number = 0
+  store: any
+  WebSocket: WebSocket | undefined;
+
+  constructor (connectionUrl: string, opts: Opts = {}) {
+    if (opts.format) {
+        this.format = String(opts.format).toLowerCase()
+    }
     this.connectionUrl = connectionUrl
     this.opts = opts
 
-    this.reconnection = this.opts.reconnection || false
-    this.reconnectionAttempts = this.opts.reconnectionAttempts || Infinity
-    this.reconnectionDelay = this.opts.reconnectionDelay || 1000
-    this.reconnectTimeoutId = 0
+    this.reconnection = Boolean(this.opts.reconnection) || false
+    this.reconnectionAttempts = Number(this.opts.reconnectionAttempts) || Infinity
+    this.reconnectionDelay = Number(this.opts.reconnectionDelay) || 1000
+    //this.reconnectTimeoutId  = 0
     this.reconnectionCount = 0
 
     this.connect(connectionUrl, opts)
@@ -18,8 +33,8 @@ export default class {
     this.onEvent()
   }
 
-  connect (connectionUrl, opts = {}) {
-    let protocol = opts.protocol || ''
+  connect (connectionUrl: string, opts: Opts = {}) {
+    let protocol: string = String(opts.protocol) || ''
     this.WebSocket = opts.WebSocket || (protocol === '' ? new WebSocket(connectionUrl) : new WebSocket(connectionUrl, protocol))
     if (this.format === 'json') {
       if (!('sendObj' in this.WebSocket)) {

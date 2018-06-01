@@ -1,9 +1,10 @@
 import Observer from './Observer'
 import Emitter from './Emitter'
+import Vue from "vue";
 
 export default {
 
-  install (Vue, connection, opts = {}) {
+  install (Vue: Vue, connection: string, opts = {}) {
     if (!connection) { throw new Error('[vue-native-socket] cannot locate connection') }
 
     let observer = null

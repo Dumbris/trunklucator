@@ -19,8 +19,12 @@ class Emitter {
 
   addListener (label: string, callback: Callback, vm: any) {
     if (typeof callback === 'function') {
-      this.listeners.has(label) || this.listeners.set(label, [])
-      this.listeners.get(label).push({callback: callback, vm: vm})
+      let listener =  this.listeners.get(label)
+      if (listener) {
+            listener.push({callback: callback, vm: vm})
+      } else {
+        this.listeners.set(label, [{callback: callback, vm: vm}])
+      } 
       return true
     }
     return false
