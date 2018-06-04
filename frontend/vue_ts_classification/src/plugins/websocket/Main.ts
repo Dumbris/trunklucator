@@ -34,17 +34,20 @@ const WebSocketPlugin: PluginObject<any> = {
 
     Vue.mixin({
       created () {
-        let vm = this
-        let sockets = this.$options['sockets']
+        //let vm = this
+        const vm: Vue = this as Vue;
+        let sockets = vm.$options.sockets
 
-        this.$options.sockets = new Proxy({}, {
+        vm.$options.sockets = new Proxy({} as any, {
           set (target, key, value) {
             Emitter.addListener(key, value, vm)
             target[key] = value
             return true
           },
           deleteProperty (target, key) {
-            Emitter.removeListener(key, vm.$options.sockets[key], vm)
+            if ((vm.$options.sockets) && (key in vm.$options.sockets)) {
+              Emitter.removeListener(key, vm.$options.sockets[key], vm)
+            }
             delete target.key
             return true
           }
@@ -52,16 +55,21 @@ const WebSocketPlugin: PluginObject<any> = {
 
         if (sockets) {
           Object.keys(sockets).forEach((key) => {
-            this.$options.sockets[key] = sockets[key]
+            if ((vm.$options.sockets) && (sockets)) {//WTF required to fix error message in ts
+              vm.$options.sockets[key] = sockets[key]
+            }
           })
         }
       },
       beforeDestroy () {
-        let sockets = this.$options['sockets']
+        const vm: Vue = this as Vue;
+        let sockets = vm.$options['sockets']
 
         if (sockets) {
           Object.keys(sockets).forEach((key) => {
-            delete this.$options.sockets[key]
+            if (vm.$options.sockets) {//WTF required to fix error message in ts
+              delete vm.$options.sockets[key]
+            }
           })
         }
       }

@@ -12,7 +12,7 @@ export default class {
   reconnectTimeoutId: number = 0
   reconnectionCount: number = 0
   store: any
-  WebSocket!: WebSocket;
+  websocket!: WebSocket;
 
   constructor (connectionUrl: string, opts: Opts = {}) {
     if (opts.format) {
@@ -35,14 +35,14 @@ export default class {
 
   connect (connectionUrl: string, opts: Opts = {}) {
     let protocol: string = String(opts.protocol) || ''
-    this.WebSocket = protocol === '' ? new WebSocket(connectionUrl) : new WebSocket(connectionUrl, protocol)
+    this.websocket = protocol === '' ? new WebSocket(connectionUrl) : new WebSocket(connectionUrl, protocol)
     if (this.format === 'json') {
-      if (!('sendObj' in this.WebSocket)) {
-        this.WebSocket.sendObj = (obj: Object): void => this.WebSocket.send(JSON.stringify(obj))
+      if (!('sendObj' in this.websocket)) {
+        (this.websocket as any as WebSocket).sendObj = (obj: Object): void => this.websocket.send(JSON.stringify(obj)) //WTF as any?
       }
     }
 
-    return this.WebSocket
+    return this.websocket
   }
 
   reconnect () {
@@ -63,7 +63,7 @@ export default class {
 
   onEvent () {
     ['onmessage', 'onclose', 'onerror', 'onopen'].forEach((eventType) => {
-      this.WebSocket[eventType] = (event: Event) => {
+      this.websocket[eventType] = (event: Event) => {
         Emitter.emit(eventType, event)
 
         if (this.store) { this.passToStore('SOCKET_' + eventType, event) }
@@ -75,6 +75,7 @@ export default class {
     })
   }
 
+  //TODO Refactoring
   passToStore (eventName: string, event: MessageEvent) {
     if (!eventName.startsWith('SOCKET_')) { return }
     let method = 'commit'

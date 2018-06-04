@@ -12,12 +12,12 @@ type Listeners = ListenerType[]
 
 
 class Emitter {
-  public listeners: Map<string, Listeners>; 
+  public listeners: Map<PropertyKey, Listeners>; 
   constructor () {
-    this.listeners = new Map<string, Listeners>();
+    this.listeners = new Map<PropertyKey, Listeners>();
   }
 
-  addListener (label: string, callback: Callback, vm: any) {
+  addListener (label: PropertyKey, callback: Callback, vm: any) {
     if (typeof callback === 'function') {
       let listener =  this.listeners.get(label)
       if (listener) {
@@ -30,7 +30,7 @@ class Emitter {
     return false
   }
 
-  removeListener (label: string, callback: Callback, vm: any) {
+  removeListener (label: PropertyKey, callback: Callback, vm: any) {
     let listeners = this.listeners.get(label)
     let index
 
@@ -51,7 +51,7 @@ class Emitter {
     return false
   }
 
-  emit (label: string, ...args: any[]) {
+  emit (label: PropertyKey, ...args: any[]) {
     let listeners = this.listeners.get(label)
 
     if (listeners && listeners.length) {

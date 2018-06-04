@@ -1,7 +1,6 @@
 import Vue from "vue";
 import HelloComponent from "./components/Hello.vue";
-import VueNativeSock from './components/websocket/Main';
-Vue.use(VueNativeSock, 'ws://localhost:9090', { format: 'json' } )
+import VueNativeSock from './plugins/websocket/Main';
 
 Vue.use(VueNativeSock, 'ws://localhost:9090', { format: 'json' })
 
