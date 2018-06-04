@@ -1,13 +1,18 @@
 import Observer from './Observer'
 import Emitter from './Emitter'
-import Vue from "vue";
+//import _Vue, { PluginObject } from "vue";
+import Vue, { PluginObject, VueConstructor } from 'vue';
 
-export default {
+interface IOptions {
+  name?: string
+}
 
-  install (Vue: Vue, connection: string, opts = {}) {
+const WebSocketPlugin: PluginObject<any> = {
+
+ install (vue: VueConstructor, connection: string, opts = {}) {
     if (!connection) { throw new Error('[vue-native-socket] cannot locate connection') }
 
-    let observer = null
+    let observer: Observer
 
     if (opts.connectManually) {
       Vue.prototype.$connect = () => {
@@ -63,3 +68,5 @@ export default {
     })
   }
 }
+
+export default WebSocketPlugin;

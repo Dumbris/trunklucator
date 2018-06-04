@@ -9,7 +9,7 @@ export default class {
   reconnection: boolean = false
   reconnectionAttempts: number = Infinity
   reconnectionDelay: number = 1000
-  reconnectTimeoutId: NodeJS.Timer
+  reconnectTimeoutId: number = 0
   reconnectionCount: number = 0
   store: any
   WebSocket!: WebSocket;
@@ -24,7 +24,7 @@ export default class {
     this.reconnection = Boolean(this.opts.reconnection) || false
     this.reconnectionAttempts = Number(this.opts.reconnectionAttempts) || Infinity
     this.reconnectionDelay = Number(this.opts.reconnectionDelay) || 1000
-    //this.reconnectTimeoutId  = 0
+    this.reconnectTimeoutId  = 0
     this.reconnectionCount = 0
 
     this.connect(connectionUrl, opts)
@@ -33,12 +33,12 @@ export default class {
     this.onEvent()
   }
 
-  connect (connectionUrl: string, opts: Opts = {}, websocket = undefined) {
+  connect (connectionUrl: string, opts: Opts = {}) {
     let protocol: string = String(opts.protocol) || ''
-    this.WebSocket = websocket || (protocol === '' ? new WebSocket(connectionUrl) : new WebSocket(connectionUrl, protocol))
+    this.WebSocket = protocol === '' ? new WebSocket(connectionUrl) : new WebSocket(connectionUrl, protocol)
     if (this.format === 'json') {
       if (!('sendObj' in this.WebSocket)) {
-        this.WebSocket.sendObj = (obj) => this.WebSocket.send(JSON.stringify(obj))
+        this.WebSocket.sendObj = (obj: Object): void => this.WebSocket.send(JSON.stringify(obj))
       }
     }
 
@@ -50,7 +50,7 @@ export default class {
       this.reconnectionCount++
       clearTimeout(this.reconnectTimeoutId)
 
-      this.reconnectTimeoutId = setTimeout(() => {
+      this.reconnectTimeoutId = window.setTimeout(() => {
         if (this.store) { this.passToStore('SOCKET_RECONNECT', this.reconnectionCount) }
 
         this.connect(this.connectionUrl, this.opts)
@@ -79,7 +79,7 @@ export default class {
     if (!eventName.startsWith('SOCKET_')) { return }
     let method = 'commit'
     let target = eventName.toUpperCase()
-    let msg = event
+    let msg = event as MessageEvent
     if (this.format === 'json' && event.data) {
       msg = JSON.parse(event.data)
       if (msg.mutation) {
