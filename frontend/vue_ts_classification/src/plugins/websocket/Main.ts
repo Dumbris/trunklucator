@@ -17,7 +17,7 @@ const WebSocketPlugin: PluginObject<any> = {
     if (opts.connectManually) {
       Vue.prototype.$connect = () => {
         observer = new Observer(connection, opts)
-        Vue.prototype.$socket = observer.WebSocket
+        Vue.prototype.$socket = observer.websocket
       }
 
       Vue.prototype.$disconnect = () => {
@@ -29,7 +29,7 @@ const WebSocketPlugin: PluginObject<any> = {
       }
     } else {
       observer = new Observer(connection, opts)
-      Vue.prototype.$socket = observer.WebSocket
+      Vue.prototype.$socket = observer.websocket
     }
 
     Vue.mixin({

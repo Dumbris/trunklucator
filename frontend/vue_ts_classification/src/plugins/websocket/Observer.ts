@@ -34,8 +34,7 @@ export default class {
   }
 
   connect (connectionUrl: string, opts: Opts = {}) {
-    let protocol: string = String(opts.protocol) || ''
-    this.websocket = protocol === '' ? new WebSocket(connectionUrl) : new WebSocket(connectionUrl, protocol)
+    this.websocket = new WebSocket(connectionUrl)
     if (this.format === 'json') {
       if (!('sendObj' in this.websocket)) {
         (this.websocket as any as WebSocket).sendObj = (obj: Object): void => this.websocket.send(JSON.stringify(obj)) //WTF as any?
@@ -51,31 +50,35 @@ export default class {
       clearTimeout(this.reconnectTimeoutId)
 
       this.reconnectTimeoutId = window.setTimeout(() => {
-        if (this.store) { this.passToStore('SOCKET_RECONNECT', this.reconnectionCount) }
+        //if (this.store) { this.passToStore('SOCKET_RECONNECT', this.reconnectionCount) }
+        console.log("RECONNECT")
 
         this.connect(this.connectionUrl, this.opts)
         this.onEvent()
       }, this.reconnectionDelay)
     } else {
-      if (this.store) { this.passToStore('SOCKET_RECONNECT_ERROR', true) }
+      //if (this.store) { this.passToStore('SOCKET_RECONNECT_ERROR', true) }
+        console.error("RECONNECT_ERROR")
     }
   }
 
   onEvent () {
-    ['onmessage', 'onclose', 'onerror', 'onopen'].forEach((eventType) => {
-      this.websocket[eventType] = (event: Event) => {
-        Emitter.emit(eventType, event)
-
-        if (this.store) { this.passToStore('SOCKET_' + eventType, event) }
-
-        if (this.reconnection && eventType === 'onopen') { this.reconnectionCount = 0 }
-
-        if (this.reconnection && eventType === 'onclose') { this.reconnect() }
-      }
-    })
+    this.websocket.onmessage = (event: MessageEvent) => {
+      Emitter.emit('onmessage', event)
+    }
+    this.websocket.onopen = (event: Event) => {
+        if (this.reconnection) { this.reconnectionCount = 0 }
+    }
+    this.websocket.onclose = (event: Event) => {
+        if (this.reconnection) { this.reconnect() }
+    }
+    this.websocket.onerror = (event: Event) => {
+      console.error(event)
+    }
   }
 
   //TODO Refactoring
+  /*
   passToStore (eventName: string, event: MessageEvent) {
     if (!eventName.startsWith('SOCKET_')) { return }
     let method = 'commit'
@@ -92,4 +95,5 @@ export default class {
     }
     this.store[method](target, msg)
   }
+  */
 }
