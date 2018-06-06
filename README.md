@@ -1,9 +1,9 @@
-## InteractiveLabeler
+## InteractiveLabeler (Work in progress)
 
-This repository is a prototype of component for interaction with user during active learning.
+This repository is a prototype of a component for interaction with the user during an active learning session.
 
 
-## WIP
+## Example of usage
 
 ```
 
@@ -13,9 +13,11 @@ y = labels()
 with InteractiveLabeler(label_name, type=MULTYCLASS) as labeler: #localhost:8085 become available here
     for i in range(10):
         X_ = UncertaintySampling(X,y_pred)
-        y_ = labeler.make_query(X_) #human in the loop here
+        y_ = labeler.ask(X_) #ask human here
         model.fit(X_,y_)
 ```
+
+See `examples\20newsgroups.py` for detailed example.
 
 ### Back-end <-> Frontend protocol
 

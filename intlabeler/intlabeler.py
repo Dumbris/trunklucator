@@ -63,7 +63,7 @@ class InteractiveLabeler:
         return False
 
 
-    def make_query(self, X, label_name, title, task_type, y):
+    def ask(self, X, label_name, title, task_type, y):
         #create task object
         task_data = dto.Data(dto.get_id(), X, label_name, title, task_type, y)
         coro = self.aiothread.server.add_task(task_data)

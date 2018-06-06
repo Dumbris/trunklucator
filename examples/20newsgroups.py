@@ -64,7 +64,7 @@ label_name = ['Y', 'N']
 with InteractiveLabeler() as il:
     for i in range(quota):
         ask_id = qs.make_query()
-        lb = il.make_query(train_dataset.data[ask_id], label_name, title, const_ttype.BINARY, None)
+        lb = il.ask(train_dataset.data[ask_id], label_name, title, const_ttype.BINARY, None)
         print(lb)
         print(type(lb))
         trn_ds.update(ask_id, lb)
