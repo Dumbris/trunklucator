@@ -14,11 +14,11 @@ export const task = {
     },
 
     getters: {
-        getSampleNames(state: TaskState) {
+        getSampleIds(state: TaskState) {
             return state.items.map((item) => item.sample.data);
         },
 
-        getItemsByStatus(state: TaskState) {
+        getSamplesByStatus(state: TaskState) {
             return (status: boolean) => state.items.filter((item) => item.isSolved === status);
         },
     },
@@ -33,7 +33,7 @@ export const task = {
             state.items.push({ sample: item.sample, isSolved: false, solution: 0 });
         },
 
-        setTotalAmount(state: TaskState, totalSolved: number) {
+        setTotalSolved(state: TaskState, totalSolved: number) {
             state.totalSolved = totalSolved;
         },
 
@@ -49,13 +49,21 @@ export const task = {
             // Imagine this is a server API call to figure out which items are available:
             await new Promise((resolve, _) => setTimeout(() => resolve(), 500));
 
-            const availableSampleNames = readSampleNames(context);
-            commitSolveSamples(context, availableSampleNames);
+            const availableSampleIds = readSampleIds(context);
+            commitSolveSamples(context, availableSampleIds);
+        },
+
+        async updateSolvedAmount(context: TaskContext): Promise<void> {
+            // Imagine this is a server API call to figure out which items are available:
+            await new Promise((resolve, _) => setTimeout(() => resolve(), 500));
+
+            const availableSamples = readSamplesByStatus(context)(true);
+            commitSetSolvedAmount(context, availableSamples.length);
         },
 
         async SelectAvailablieItemsAndUpdateTotalAmount(context: TaskContext, discount: number): Promise<void> {
             await dispatchSelectAvailableItems(context);
-            await dispatchUpdateTotalAmount(context, discount);
+            await dispatchUpdateSolvedAmount(context);
         },
     },
 };
@@ -65,13 +73,12 @@ const { commit, read, dispatch } =
 
 const getters = task.getters;
 
-export const readSampleNames = read(getters.getSampleNames);
-export const readItemsByStatus = read(getters.getItemsByStatus);
-export const readTotalAmountWithoutDiscount = read(getters.getTotalAmountWithoutDiscount);
+export const readSampleIds = read(getters.getSampleIds);
+export const readSamplesByStatus = read(getters.getSamplesByStatus);
 
 const actions = task.actions;
 
-export const dispatchUpdateTotalAmount = dispatch(actions.updateTotalAmount);
+export const dispatchUpdateSolvedAmount = dispatch(actions.updateSolvedAmount);
 export const dispatchSelectAvailableItems = dispatch(actions.selectAvailableItems);
 export const dispatchSelectAvailablieItemsAndUpdateTotalAmount =
     dispatch(actions.SelectAvailablieItemsAndUpdateTotalAmount);
@@ -80,5 +87,5 @@ const mutations = task.mutations;
 
 export const commitReset = commit(mutations.reset);
 export const commitAppendItem = commit(mutations.appendItem);
-export const commitSetTotalAmount = commit(mutations.setTotalAmount);
-export const commitSelectSamples = commit(mutations.selectSamples);
+export const commitSetSolvedAmount = commit(mutations.setTotalSolved);
+export const commitSolveSamples = commit(mutations.solveSamples);

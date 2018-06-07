@@ -3,6 +3,7 @@
 <template lang="pug">
     <div>
         <div :class="$style.greeting">Hello {{name}}{{exclamationMarks}}</div>
+        <div :class="$style.greeting">{{getTaskText}}</div>
         <button @click="decrement">-</button>
         <button @click="increment">+</button>
     </div>
@@ -10,9 +11,8 @@
 
 <script lang="ts">
 import Vue from "vue";
-import * as basket from "./store/task"; // Or better import specific accessor to be explicit about what you use
+import * as task from "./store/task"; // Or better import specific accessor to be explicit about what you use
 
-getterResult = basket.readProductNames(this.$store); // This returns Product[] 
 //basket.dispatchUpdateTotalAmount(this.$store, 0.5); // This accepts number (discount) - you'd normally use an object as arguments. Returns promise.
 //basket.commitAppendItem(this.$store, newItem); // This will give compilation error if you don't pass { product: Product; atTheEnd: boolean } in
 
@@ -22,6 +22,10 @@ export default Vue.extend({
         return {
             enthusiasm: this.initialEnthusiasm,
         }
+    },
+    mounted: function() {
+       //TODO subscribe to websocket updates here
+       //this.$store. 
     },
     methods: {
         increment() { this.enthusiasm++; },
@@ -34,6 +38,11 @@ export default Vue.extend({
     computed: {
         exclamationMarks(): string {
             return Array(this.enthusiasm + 1).join('!');
+        },
+        getTaskText(): string {
+            const getterResult = task.readSamplesByStatus(this.$store)(false); // This returns Product[] 
+            console.log("->>", getterResult)
+            return Array(getterResult).join(' ')
         }
     }
 });
