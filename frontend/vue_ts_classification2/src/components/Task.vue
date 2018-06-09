@@ -1,37 +1,27 @@
 <!-- src/components/Task.vue -->
 
 <template>
-    <div>
-        <div :class="$style.greeting">Hello {{name}}{{exclamationMarks}}</div>
-        <button @click="decrement">-</button>
-        <button @click="increment">+</button>
-    </div>
+    <div><SampleViewer x="task.x"/>{{task}}</div>
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { Task } from './../protocol/types'
+import SampleViewer from './SampleViewer.vue';
+import { Component, Prop, Vue } from 'vue-property-decorator';
 
-export default Vue.extend({
-    props: ['name', 'initialEnthusiasm'],
-    data() {
-        return {
-            enthusiasm: this.initialEnthusiasm,
-        }
-    },
-    methods: {
-        increment() { this.enthusiasm++; },
-        decrement() {
-            if (this.enthusiasm > 1) {
-                this.enthusiasm--;
-            }
-        },
-    },
-    computed: {
-        exclamationMarks(): string {
-            return Array(this.enthusiasm + 1).join('!');
-        }
-    }
-});
+@Component({
+  name: 'TaskViewer',
+  components: {
+    SampleViewer
+  }
+})
+export default class TaskViewer extends Vue {
+  @Prop({type: Task}) private task!: Task;
+
+  mounted() {
+      console.log(this)
+  }
+}
 </script>
 
 <style  module>

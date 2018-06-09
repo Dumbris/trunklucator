@@ -12,6 +12,6 @@ export class StorePlugin implements PluginObject<{}> {
       this.store = options && options.store ? options.store : {}
     }
     if (!this.store) { throw new Error('Cannot store') }
-    vue.prototype.$sharedState = this.store
+    vue.prototype.$store = this.store
   }
 }

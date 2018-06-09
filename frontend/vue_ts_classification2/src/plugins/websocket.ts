@@ -50,7 +50,11 @@ export class WebSocketPlugin implements PluginObject<{}> {
       let msg: any = JSON.parse(event.data)
       if (("type" in msg) && (msg["type"] == 'task')) {
         console.log(msg["payload"])
-        this.eventbus.$emit('servermsg', msg["payload"])
+        if (this.eventbus) {
+            this.eventbus.$emit('servermsg', msg)
+        } else {
+            throw new Error("Eventbus required")
+        }
       }
       if (("type" in msg) && (msg["type"] == "stop")) {
         console.log(msg)

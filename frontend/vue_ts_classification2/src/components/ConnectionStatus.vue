@@ -3,7 +3,6 @@
 <template>
     <div>
         <div :class="$style.greeting">{{status}}</div>
-        <div :class="$style.greeting">{{task}}</div>
     </div>
 </template>
 
@@ -28,11 +27,6 @@ export default Vue.extend({
             const vm = this as Vue
             return getStatus(vm.$socket);
         },
-        task(): string {
-            const vm = this as Vue
-            //vm.$bus.
-            return '';
-        }
     }
 });
 </script>
