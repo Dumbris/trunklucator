@@ -22,6 +22,12 @@
             "problemMatcher": [
                 "$tsc"
             ]
+        },
+        {
+            "type": "npm",
+            "script": "serve",
+            "path": "frontend/vue_ts_classification2/",
+            "problemMatcher": []
         }
     ]
 }
