@@ -1,7 +1,7 @@
 <!-- src/components/Task.vue -->
 
 <template>
-    <div><SampleViewer x="task.x"/>{{task}}</div>
+    <div><SampleViewer v-bind:x="task.x"/>{{task.title}}</div>
 </template>
 
 <script lang="ts">
