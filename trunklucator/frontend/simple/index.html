@@ -1,0 +1,83 @@
+<div id="app">
+  <h1>{{data.title}}</h1>
+  <pre>{{state}}</pre>
+  <pre>{{data.x}}</pre>
+  <button v-on:click="send(1)">Yes</button>
+  <button v-on:click="send(0)">No</button>
+
+  <!--<input v-model="message" @keyup.enter="send">-->
+</div>
+
+<script src="https://unpkg.com/vue"></script>
+<script>
+  var websocket = null;
+  const wsVue = new Vue({
+    el: '#app',
+    data: {
+      state: '',
+      reply: '',
+      data: ''
+    },
+    created() {
+      const self = this
+      // This code will run on startup
+      console.log("start");
+        //initWs();
+      if ('WebSocket' in window) {
+        websocket = new WebSocket("ws://localhost:8085/echo/v1.0");
+      }
+      else {
+        alert('Sorry, websocket not supported by your browser.')
+      }
+      //Error callback
+      websocket.onerror = function () {
+        console.error("error!");
+        self.opened = false;
+      };
+      //socket opened callback
+      websocket.onopen = function (event) {
+        console.log("websocket opened");
+        self.opened = true;
+      };
+      //message received callback
+      websocket.onmessage = function (event) {
+      msg = JSON.parse(event.data)
+      if (("type" in msg) && (msg["type"] == "task")) {
+        self.setTask(msg["payload"])
+      }
+      if (("type" in msg) && (msg["type"] == "stop")) {
+        self.setTask({"x":"stop"})
+        //websocket.close();
+      }
+      };
+      //socket closed callback
+      websocket.onclose = function () {
+        console.log("websocket closed");
+        self.opened = false;
+      };
+      //when browser window closed, close the socket, to prevent server exception
+      window.onbeforeunload = function () {
+        websocket.close();
+      };
+    },
+
+    methods: {
+    send (decision) {
+      var sol = {"type": "solution", 
+            "payload": 
+              {"task_id": this.data["task_id"], 
+              "y": decision
+              }, 
+              "reply_id": null, 
+              "msg_id": "751e1a72-3063-463a-9194-ca95ef68feaf"
+              }
+    
+      to_send = JSON.stringify(sol);
+      websocket.send(to_send)
+    },
+    setTask (task_data) {
+      this.data = task_data
+    }},
+  });
+
+</script>
