@@ -1,8 +1,9 @@
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 mpl.use('Agg')
+import matplotlib.pyplot as plt
+
 
 def plot_performance(performance_history):
     fig, ax = plt.subplots(figsize=(8.5, 6), dpi=130)
