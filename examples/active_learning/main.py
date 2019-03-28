@@ -66,6 +66,8 @@ with trunklucator.WebUI() as tru:
         y = tru.ask({"html":"<pre>{}</pre>".format(text)}, meta=META) # We are waiting for human action here
 
         if y == -1:
+            # Remove the skipped instance from the unlabeled pool.
+            X_pool = np.delete(X_pool, query_index, axis=0)
             continue
 
         print(twenty_train.target_names[y])
