@@ -14,6 +14,10 @@ For full example see `examples/images` directory
 
 Trunklucator is the best when you need to represent complex data like image, formatted text, video or sound to the user and ask the user to label/annotate this data. After a user's action, you immediately are able to use this data in your pipeline.  Trunklucator works well together with active learning (see `examples/active_learning`).
 
+## Screenshot
+
+![Images Classification example](/screenshots/images_classification.png?raw=true "Images Classification example")
+
 ## Installation
 
 ```
