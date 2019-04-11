@@ -37,7 +37,7 @@ def get_frontend_dir():
 
 HOST = 'HOST'
 PORT = 'PORT'
-FRONEND_DIR = 'FRONTEND_DIR'
+FRONTEND_DIR = 'FRONTEND_DIR'
 DATA_DIR = 'DATA_DIR'
 LOG_MESSAGES = 'LOG_MESSAGES'
 
@@ -78,7 +78,8 @@ class WebServer:
         if self.data_dir:
             self.app.router.add_static('/data', self.data_dir, name='data', show_index=True)
             logger.info("Using {} as data directory.".format(self.data_dir))
-        self.frontend_dir = frontend_dir if frontend_dir else get_frontend_dir()
+        frontend_dir = frontend_dir if frontend_dir else get_frontend_dir()
+        self.frontend_dir = read_env(FRONTEND_DIR, frontend_dir)
         logger.info("Using {} as frontend directory.".format(self.frontend_dir))
         self.app.router.add_static('/', self.frontend_dir, name='static', show_index=True)
 
