@@ -39,7 +39,7 @@ PORT=8080 python3 main.py
 Also, you can use similar parameters in code then instanciate trunklucator.WebUI class.
 
 ```bash
-with WebUI(host='192.168.0.30', port=8080, data_dir='./data', fronend_dir='./myfront')
+with WebUI(host='192.168.0.30', port=8080, data_dir='./data', frontend_dir='./myfront')
 ```
 
 ## API methods
