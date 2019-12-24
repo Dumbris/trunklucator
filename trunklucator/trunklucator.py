@@ -18,12 +18,9 @@ def signal_handler(loop):
     loop.remove_signal_handler(signal.SIGTERM)
     #is_working = False
 
-class WebUI:
+class BaseUI:
 
-    """Interactive Labeler
-
-    InteractiveLabeler is a Labeler object that shows the feature through html
-    using javascript and lets human label each feature.
+    """Base class for UI
 
     Parameters
     ----------
@@ -69,6 +66,30 @@ class WebUI:
         return False
 
     def ask(self, X, meta=None, return_all=False):
+        return None
+
+    def update(self, X):
+        return None
+
+
+class WebUI(BaseUI):
+    """Interactive Labeler
+
+    InteractiveLabeler is a Labeler object that shows the feature through html
+    using javascript and lets human label each feature.
+
+    Parameters
+    ----------
+    label_name: list
+        Let the label space be from 0 to len(label_name)-1, this list
+        corresponds to each label's name.
+
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs['default_frontend_dir'] = 'frontend/html_field'
+        super(WebUI, self).__init__(*args, **kwargs)
+
+    def ask(self, X, meta=None, return_all=False):
         #create task object
         task_data = dto.Data(dto.get_id(), X, meta)
         coro = self.aiothread.server.add_task(task_data)
@@ -80,6 +101,47 @@ class WebUI:
                 return result
             else:
                 return result.y
+        except asyncio.TimeoutError:
+            print('The coroutine took too long, cancelling the task')
+            future.cancel()
+        except Exception as exc:
+            print('The coroutine raised an exception: {!r}'.format(exc))
+
+
+    def update(self, X):
+        #create task object
+        coro = self.aiothread.server.publish_update(dto.Update(X))
+        _ = self.aiothread.add_task(coro)
+
+
+class LabelStudio(BaseUI):
+    task_counter:int = 1
+    """Interactive Labeler
+
+    InteractiveLabeler is a Labeler object that shows the feature through html
+    using javascript and lets human label each feature.
+
+    Parameters
+    ----------
+    label_name: list
+        Let the label space be from 0 to len(label_name)-1, this list
+        corresponds to each label's name.
+
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs['default_frontend_dir'] = 'frontend/label_studio'
+        super(LabelStudio, self).__init__(*args, **kwargs)
+
+    def ask(self, X, meta=None, return_all=False):
+        #create task object
+        task_data = dto.Data(self.task_counter, X, meta)
+        self.task_counter += 1
+        coro = self.aiothread.server.add_task(task_data)
+        future = self.aiothread.add_task(coro)
+        #Make sure you wait for loop to start. Calling future.cancel() in main thread will cancel asyncio coroutine in background thread.
+        try:
+            result = future.result()
+            return result
         except asyncio.TimeoutError:
             print('The coroutine took too long, cancelling the task')
             future.cancel()

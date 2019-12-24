@@ -8,6 +8,8 @@ import asyncio
 import logging
 from aiohttp import web
 from aiohttp import WSCloseCode
+import aiohttp_jinja2
+import jinja2
 import json
 import weakref
 
@@ -20,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 API_VERSION = 'v1.0'
 API_URL = '/trunklucator' + '/' + API_VERSION
-DEFAULT_FRONTEND_DIR = os.path.join(os.pardir, 'frontend/html_field')
 
 PRINT_MSG = logger.isEnabledFor(logging.DEBUG)
 
@@ -31,15 +32,16 @@ def prt_msg(str_:str):
     return str_
 
 
-def get_frontend_dir():
+def get_frontend_dir(default_frontend_dir):
     _ROOT = os.path.abspath(os.path.dirname(__file__))
-    return os.path.join(_ROOT, DEFAULT_FRONTEND_DIR)
+    return os.path.join(_ROOT, default_frontend_dir)
 
 HOST = 'HOST'
 PORT = 'PORT'
-FRONTEND_DIR = 'FRONTEND_DIR'
-DATA_DIR = 'DATA_DIR'
-LOG_MESSAGES = 'LOG_MESSAGES'
+FRONTEND_DIR    = 'FRONTEND_DIR'
+DATA_DIR        = 'DATA_DIR'
+LOG_MESSAGES    = 'LOG_MESSAGES'
+JS_PARAMS       = 'JS_PARAMS'
 
 def read_env(key, default):
     if key in os.environ:
@@ -51,7 +53,16 @@ def read_env(key, default):
 class WebServer:
     """WebServer class doc TODO
     """
-    def __init__(self, loop=None, host='127.0.0.1', port=8086, frontend_dir=None, data_dir=None, log_messages=False):
+    def __init__(self, 
+                 loop=None, 
+                 host='127.0.0.1', 
+                 port=8086, 
+                 frontend_dir=None, 
+                 data_dir=None, 
+                 log_messages=False, 
+                 js_params=None,
+                 default_frontend_dir='frontend/html_field',
+                 ):
         """ Parameters
             ----------
             loop : asyncio event loop
@@ -67,6 +78,7 @@ class WebServer:
         self.app_runner = None
         self.data_dir = read_env(DATA_DIR, data_dir)
         self.log_messages = read_env(LOG_MESSAGES, log_messages)
+        self.js_params = read_env(JS_PARAMS, js_params)
         #states
         self.app[KEY_SOCKETS] = weakref.WeakSet()
         self.app['task'] : dto.Data = None
@@ -74,14 +86,25 @@ class WebServer:
         self.app['solution_event'] = None
         #end of states
         #setup handlers
-        self.app.router.add_routes([web.get(API_URL, self.wshandle), web.get('/', self.index_handler)])
+        self.app.router.add_routes(
+            [
+                web.get(API_URL, self.wshandle), 
+                web.get('/', self.index_handler), 
+                web.get('/index.html', self.index_handler), 
+                web.get('/index.htm', self.index_handler), 
+                web.get(r'/api/projects/{id:\d+}/next', self.get_task_handler, allow_head=False), 
+                web.post(r'/api/tasks/{id:\d+}/completions/', self.post_completion_handler)
+            ]
+        )
         if self.data_dir:
             self.app.router.add_static('/data', self.data_dir, name='data', show_index=True)
             logger.info("Using {} as data directory.".format(self.data_dir))
-        frontend_dir = frontend_dir if frontend_dir else get_frontend_dir()
+        frontend_dir = frontend_dir if frontend_dir else get_frontend_dir(os.path.join(os.pardir, default_frontend_dir))
         self.frontend_dir = read_env(FRONTEND_DIR, frontend_dir)
         logger.info("Using {} as frontend directory.".format(self.frontend_dir))
         self.app.router.add_static('/', self.frontend_dir, name='static', show_index=True)
+        
+        aiohttp_jinja2.setup(self.app, loader=jinja2.FileSystemLoader(self.frontend_dir))
 
     def jd(self, msg : dto.Message):
         if self.log_messages:
@@ -119,7 +142,35 @@ class WebServer:
         """Redirect / to index.html
 
         """
-        return web.HTTPFound('/index.html')
+        context = {'js_params': self.js_params}
+        response = aiohttp_jinja2.render_template('index.html',
+                                              request,
+                                              context)
+        return response
+        #return web.HTTPFound('/index.html')
+
+    async def get_task_handler(self, request):
+        if self.app["task"]:
+            _id, task, _meta = self.app["task"]
+            return web.json_response({**task, **{"id":_id}})
+        return web.HTTPNotFound()
+
+    async def post_completion_handler(self, request):
+        str_id = request.match_info.get('id', 0)
+        try:
+            task_id = int(str_id)
+        except ValueError as e:
+            logger.exception("Invalid message from client")
+            raise e
+        #create solution
+        task = self.app["task"]
+        if task and task.task_id == task_id:
+            data = await request.json()
+            self.app["solution"] = data
+            assert not self.app["solution_event"].is_set()
+            self.app["solution_event"].set()
+            return web.json_response({'id': task_id}, status=201)
+        return web.HTTPInternalServerError()
 
     def get_nt_field(self, msg, field, default=None):
         if msg and (field in msg):

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Trunklucator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8"/>
+
+    <!-- Include Label Studio stylesheet -->
+    <link href="/static/css/main.334c1172.css" rel="stylesheet">
+
+    <script type="module" src="/static/js/onmessage.js" defer></script>
+    <script type="module" src="/static/js/reconnecting-websocket.js" defer></script>
+    <!-- Include the Label Studio library -->
+    <script src="/static/js/main.3cf2578f.js"></script>
+</head>
+
+<body>
+<!-- Editor -->
+<div class="content">
+    <div id="label-studio"></div>
+</div>
+
+
+<script type="module">
+    import ReconnectingWebSocket from './static/js/reconnecting-websocket.js';
+    import Send from './static/js/send.js';
+    const self = window
+    const URL = "ws://" + location.host + "/trunklucator/v1.0"
+    self.send = Send(self)
+
+    self.setStatus = function (status) {
+        console.log(status)
+    }
+
+    window.onload = function () {
+            // Label stream mode
+            self.ls = new LabelStudio("label-studio", {
+                config: `{{ js_params.config | safe }}`,
+                //expert: {"pk": 1, "firstName": "Label", "lastName": "Expert"},
+                explore: true, // label stream mode (task by task)
+                project: { id: 1 },
+                supports: [
+                        "completions:load",
+                        "predictions:load",
+                        "check-empty",
+                        "next:load"
+                ],
+                interfaces: [
+                    "basic",
+                    //"load",  // load next task automatically (label stream mode)
+                    //"panel",  // undo, redo, reset panel
+                    "controls",  // all control buttons: skip, submit, update
+                    "submit",  // submit button on controls
+                    "predictions", // show predictions from task.predictions = [{...}, {...}]
+                    "completions",  // show completions
+                    "side-column" // entity
+                ],
+                apiCalls: false,
+                debug: true,
+                onSubmitCompletion: function(result) {
+                    self.send(result)
+                    self.ls.markLoading(false)
+                },
+                onLabelStudioLoad: function() {
+                    console.log("loaded")
+                    ReconnectingWebSocket(self, URL)
+                }
+            });
+    }
+</script>
+</body>
+</html>
