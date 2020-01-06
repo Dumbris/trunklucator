@@ -4,11 +4,13 @@
   <link rel="stylesheet" href="grid.css">
   <link rel="stylesheet" href="content.css">
     <script src="https://unpkg.com/vue" defer></script>
+    <script type="module" src="https://unpkg.com/vue-shortkey" defer></script>
     <script type="module" src="lib/onmessage.js" defer></script>
     <script type="module" src="lib/reconnecting-websocket.js" defer></script>
     <script type="module" src="app.js"></script>
 </head>
 <body>
+    {% raw %}
     <div id="app" class="container">
       <header>
         <!-- Header content -->
@@ -18,13 +20,14 @@
         <!-- Main content -->
         <div class="content" v-html="data.x.html"></div>
         <div v-if="buttons">
-              <button v-for="button in buttons" :key="button[0]" v-on:click="send(button[1])">{{ button[0] }}</button>
+              <button v-for="button in buttons" v-shortkey.once="button[2]" @shortkey="send(button[1])" :key="button[0]" v-on:click="send(button[1])">{{ button[0] }}</button>
         </div>
         <div v-if="update">
             <div v-html="update.x.html"></div>
         </div>
       </main>
     </div>
+    {% endraw %}
 </body>
 </html>
 

@@ -9,14 +9,14 @@ from jinja2 import Template
 #Current format - (label text, returning value, key code for shortcut)
 #Use https://keycode.info/ to get key codes
 META = {"buttons":[
-        ('society (a)', 'society', 65), 
-        ('economy (s)', 'economy', 83), 
-        ('technology (d)', 'technology', 68), 
-        ('sports (f)', 'sports', 70), 
-        ('entertainment (h)', 'entertainment', 72), 
-        ('science (j)', 'science', 74), 
-        ('other (k)', 'other', 75),
-        ('Skip (enter)', '', 13),
+        ('society (a)', 'society', "['a']"), 
+        ('economy (s)', 'economy', "['s']"), 
+        ('technology (d)', 'technology', "['d']"), 
+        ('sports (f)', 'sports', "['f']"), 
+        ('entertainment (h)', 'entertainment', "['h']"), 
+        ('science (j)', 'science', "['j']"), 
+        ('other (k)', 'other', "['k']"),
+        ('Skip (enter)', '', "['alt', 'enter']"),
         ]}
 
 

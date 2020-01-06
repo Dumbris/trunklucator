@@ -6,12 +6,9 @@
     <meta charset="utf-8"/>
 
     <!-- Include Label Studio stylesheet -->
-    <link href="/static/css/main.334c1172.css" rel="stylesheet">
-
-    <script type="module" src="/static/js/onmessage.js" defer></script>
-    <script type="module" src="/static/js/reconnecting-websocket.js" defer></script>
+    <link href="/static/css/main.d06f037e.css" rel="stylesheet">
     <!-- Include the Label Studio library -->
-    <script src="/static/js/main.3cf2578f.js"></script>
+    <script src="/static/js/main.54a3f9cb.js"></script>
 </head>
 
 <body>
@@ -22,49 +19,39 @@
 
 
 <script type="module">
-    import ReconnectingWebSocket from './static/js/reconnecting-websocket.js';
-    import Send from './static/js/send.js';
     const self = window
-    const URL = "ws://" + location.host + "/trunklucator/v1.0"
-    self.send = Send(self)
-
-    self.setStatus = function (status) {
-        console.log(status)
-    }
 
     window.onload = function () {
             // Label stream mode
-            self.ls = new LabelStudio("label-studio", {
-                config: `{{ js_params.config | safe }}`,
+            self.ls = new LabelStudio(document.getElementById("label-studio"), {
+                config: `{{ context.label_studio.config | safe }}`,
                 //expert: {"pk": 1, "firstName": "Label", "lastName": "Expert"},
                 explore: true, // label stream mode (task by task)
                 project: { id: 1 },
                 supports: [
-                        "completions:load",
-                        "predictions:load",
+                        //"completions",
+                        "predictions",
                         "check-empty",
                         "next:load"
                 ],
                 interfaces: [
                     "basic",
-                    //"load",  // load next task automatically (label stream mode)
+                    "load",  // load next task automatically (label stream mode)
                     //"panel",  // undo, redo, reset panel
                     "controls",  // all control buttons: skip, submit, update
                     "submit",  // submit button on controls
-                    "predictions", // show predictions from task.predictions = [{...}, {...}]
                     "completions",  // show completions
-                    "side-column" // entity
+                    "side-column", // entity
+                    /*
+                    "predictions:menu",
+                    "completions:add-new",
+                    "completions:delete",
+                    "completions:set-groundtruth",
+                    "completions:menu",
+                    */
                 ],
-                apiCalls: false,
+                apiCalls: true,
                 debug: true,
-                onSubmitCompletion: function(result) {
-                    self.send(result)
-                    self.ls.markLoading(false)
-                },
-                onLabelStudioLoad: function() {
-                    console.log("loaded")
-                    ReconnectingWebSocket(self, URL)
-                }
             });
     }
 </script>

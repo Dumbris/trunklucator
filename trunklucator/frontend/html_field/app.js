@@ -1,5 +1,9 @@
 import ReconnectingWebSocket from './lib/reconnecting-websocket.js';
 
+import 'https://unpkg.com/vue-shortkey'
+
+Vue.use(window.VueShortkey, { prevent: ['input', 'textarea'] })
+
 const wsVue = new Vue({
     el: '#app',
     data: {
@@ -27,6 +31,7 @@ const wsVue = new Vue({
         ReconnectingWebSocket(self, URL)
 
         //attache keyup event listener
+        /** 
         window.addEventListener('keyup', function(event) {
             self.buttons.forEach(function(element) {
                 if (event.keyCode == element[2]) {
@@ -34,6 +39,7 @@ const wsVue = new Vue({
                 }
             })
         });
+        */
     },
 
     methods: {

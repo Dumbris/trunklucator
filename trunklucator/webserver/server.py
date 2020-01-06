@@ -31,17 +31,28 @@ def prt_msg(str_:str):
     logger.debug("<-- {}".format(str_))
     return str_
 
+DEFAUT_FRONTEND = 'html_field'
 
-def get_frontend_dir(default_frontend_dir):
+def check_frontend_dir_with_priority(frontend_dir):
     _ROOT = os.path.abspath(os.path.dirname(__file__))
-    return os.path.join(_ROOT, default_frontend_dir)
+    if not frontend_dir:
+        frontend_dir = DEFAUT_FRONTEND
+    dirs = [
+        frontend_dir, #user's local path
+        os.path.join(_ROOT, os.pardir, 'frontend', frontend_dir), #user option 'label_studio'
+        os.path.join(_ROOT, os.pardir, frontend_dir), 
+    ]
+    for _dir in dirs:
+        if os.path.isdir(_dir):
+            return _dir
+    return None
 
 HOST = 'HOST'
 PORT = 'PORT'
 FRONTEND_DIR    = 'FRONTEND_DIR'
 DATA_DIR        = 'DATA_DIR'
 LOG_MESSAGES    = 'LOG_MESSAGES'
-JS_PARAMS       = 'JS_PARAMS'
+CONTEXT         = 'CONTEXT'
 
 def read_env(key, default):
     if key in os.environ:
@@ -60,8 +71,7 @@ class WebServer:
                  frontend_dir=None, 
                  data_dir=None, 
                  log_messages=False, 
-                 js_params=None,
-                 default_frontend_dir='frontend/html_field',
+                 context=None
                  ):
         """ Parameters
             ----------
@@ -78,7 +88,7 @@ class WebServer:
         self.app_runner = None
         self.data_dir = read_env(DATA_DIR, data_dir)
         self.log_messages = read_env(LOG_MESSAGES, log_messages)
-        self.js_params = read_env(JS_PARAMS, js_params)
+        self.context = read_env(CONTEXT, context)
         #states
         self.app[KEY_SOCKETS] = weakref.WeakSet()
         self.app['task'] : dto.Data = None
@@ -99,8 +109,10 @@ class WebServer:
         if self.data_dir:
             self.app.router.add_static('/data', self.data_dir, name='data', show_index=True)
             logger.info("Using {} as data directory.".format(self.data_dir))
-        frontend_dir = frontend_dir if frontend_dir else get_frontend_dir(os.path.join(os.pardir, default_frontend_dir))
-        self.frontend_dir = read_env(FRONTEND_DIR, frontend_dir)
+        #Environment var has priority
+        frontend_dir = read_env(FRONTEND_DIR, frontend_dir)
+        #Frontend dir: 1) Check if local dir exists else use dir from package
+        self.frontend_dir = check_frontend_dir_with_priority(frontend_dir)
         logger.info("Using {} as frontend directory.".format(self.frontend_dir))
         self.app.router.add_static('/', self.frontend_dir, name='static', show_index=True)
         
@@ -142,7 +154,7 @@ class WebServer:
         """Redirect / to index.html
 
         """
-        context = {'js_params': self.js_params}
+        context = {'context': self.context}
         response = aiohttp_jinja2.render_template('index.html',
                                               request,
                                               context)
