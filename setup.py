@@ -4,7 +4,9 @@ import sys
 from setuptools import setup, find_packages
 
 install_requires = [
+    'jinja2',
     'aiohttp',
+    'aiohttp_jinja2',
 ]
 
 if sys.version_info < (2, 7):
@@ -18,7 +20,7 @@ with open('README.md') as f:
 setup(
     name='trunklucator',
     python_requires='>3.6.0',
-    version='1.0.7',
+    version='1.1.2',
     url='https://github.com/Dumbris/trunklucator',
     license='Apache License 2.0',
     description=('Easy plugable UI for your experiments with data and machine learning'),
@@ -39,9 +41,9 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Scientific/Engineering :: Information Analysis',
     ),
     test_suite='tests',
