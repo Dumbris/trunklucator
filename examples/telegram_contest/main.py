@@ -6,18 +6,16 @@ from jinja2 import Template
 
 
 #You can change this format in frontend part.
-#Current format - (label text, returning value, key code for shortcut)
-#Use https://keycode.info/ to get key codes
-META = {"buttons":[
-        ('society (a)', 'society', "['a']"), 
-        ('economy (s)', 'economy', "['s']"), 
-        ('technology (d)', 'technology', "['d']"), 
-        ('sports (f)', 'sports', "['f']"), 
-        ('entertainment (h)', 'entertainment', "['h']"), 
-        ('science (j)', 'science', "['j']"), 
-        ('other (k)', 'other', "['k']"),
-        ('Skip (enter)', '', "['alt', 'enter']"),
-        ]}
+controls = [
+        {'label':'society (a)', 'value':'society', 'shortcut':"['a']"}, 
+        {'label':'economy (s)', 'value':'economy', 'shortcut':"['s']"}, 
+        {'label':'technology (d)', 'value':'technology', 'shortcut':"['d']"}, 
+        {'label':'sports (f)', 'value':'sports', 'shortcut':"['f']"}, 
+        {'label':'entertainment (h)', 'value':'entertainment', 'shortcut':"['h']"}, 
+        {'label':'science (j)', 'value':'science', 'shortcut':"['j']"}, 
+        {'label':'other (k)', 'value':'other', 'shortcut':"['k']"},
+        {'label':'skip (enter)', 'value':'', 'shortcut':"['enter']"},
+        ]
 
 
 HTML_TEMPLATE = '''
@@ -41,8 +39,8 @@ template = Template(HTML_TEMPLATE)
 
 filter_fields = set(["article:published_time", "lang", "filename"])
 
-with trunklucator.WebUI(data_dir="./data") as tru: # start http server in background
+with trunklucator.WebUI(context={'buttons':controls}) as tru: # start http server in background
     for data in map(json.loads, sys.stdin): #read json data from standart input
         fields = [k for k in data.keys() if k not in filter_fields]
-        data["label"] = tru.ask({"html": template.render(fields=fields, data=data)}, META)
+        data["label"] = tru.ask({"html": template.render(fields=fields, data=data)})
         print("{}".format(json.dumps(data, ensure_ascii=False)), flush=True) #output result
