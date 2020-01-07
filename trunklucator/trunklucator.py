@@ -64,8 +64,8 @@ class BaseUI:
         self.stop_thread()
         return False
 
-    def ask(self, X, meta=None):
-        return None
+    def ask(self, X, meta=None, default=-1):
+        return default
 
     def update(self, X):
         return None
@@ -89,7 +89,7 @@ class WebUI(BaseUI):
     #def __init__(self, *args, **kwargs):
     #    super(WebUI, self).__init__(*args, **kwargs)
 
-    def ask(self, X, meta=None):
+    def ask(self, X, meta=None, default=-1):
         #create task object
         task_data = dto.Data(self.task_counter, X, meta)
         self.task_counter += 1
@@ -104,6 +104,7 @@ class WebUI(BaseUI):
             future.cancel()
         except Exception as exc:
             print('The coroutine raised an exception: {!r}'.format(exc))
+        return default
 
 
     def update(self, X):
