@@ -10,13 +10,19 @@ with WebUI() as webui: # start http server in background
         print(y) 
 ```
 
-For full example see `examples/images` directory
+For full examples see `examples/quickstart` directory
+
+
+| Task | Screenshot | Example code |
+| :---         |     :---:      |          :--- |
+| binary classification   | <a href="/screenshots/images_classification.png"><img src="/screenshots/images_classification.png?raw=true" align="left" height="48" width="48"></a><br><a href="/screenshots/binary_class_text.png"><img src="/screenshots/binary_class_text.png?raw=true" align="left" height="48" width="48"></a>    | For images - [examples/quickstart/binary_class_image.py](examples/quickstart/binary_class_image.py)<br>For text - [examples/quickstart/binary_class_text.py](examples/quickstart/binary_class_text.py)    |
+| multiclass classification  | <a href="/screenshots/multi_class_text.png"><img src="/screenshots/multi_class_text.png?raw=true" align="left" height="48" width="48"></a>       | [examples/quickstart/multi_class_text.py](examples/quickstart/multi_class_text.py)      |
+| multilabel classification  | <a href="/screenshots/multi_label_text2.png"><img src="/screenshots/multi_label_text2.png?raw=true" align="left" height="48" width="48"></a>       | [examples/quickstart/multi_label_text.py](examples/quickstart/multi_label_text.py)      |
+| Named Entity Recognition (NER)  | <a href="/screenshots/ner_text.png"><img src="/screenshots/ner_text.png?raw=true" align="left" height="48" width="48"></a>       | [examples/quickstart/ner_text.py](examples/quickstart/ner_text.py)      |
+| NER for HTML format | <a href="/screenshots/ner_html.png"><img src="/screenshots/ner_html.png?raw=true" align="left" height="48" width="48"></a>       | [examples/quickstart/ner_html.py](examples/quickstart/ner_html.py)      |
+
 
 Trunklucator is the best when you need to represent complex data like image, formatted text, video or sound to the user and ask the user to label/annotate this data. After a user's action, you immediately are able to use this data in your pipeline.  Trunklucator works well together with active learning (see `examples/active_learning`).
-
-## Screenshot
-
-![Images Classification example](/screenshots/images_classification.png?raw=true "Images Classification example")
 
 ## Installation
 
