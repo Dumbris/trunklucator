@@ -6,6 +6,7 @@ Vue.use(window.VueShortkey, { prevent: ['input', 'textarea'] })
 
 const wsVue = new Vue({
     el: '#app',
+    delimiters: ['[[' , ']]'],
     data: {
         reply: '',
         data: {
