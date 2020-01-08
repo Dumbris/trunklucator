@@ -28,30 +28,10 @@
                 //expert: {"pk": 1, "firstName": "Label", "lastName": "Expert"},
                 explore: true, // label stream mode (task by task)
                 project: { id: 1 },
-                supports: [
-                        //"completions",
-                        "predictions",
-                        "check-empty",
-                        "next:load"
-                ],
-                interfaces: [
-                    "basic",
-                    "load",  // load next task automatically (label stream mode)
-                    //"panel",  // undo, redo, reset panel
-                    "controls",  // all control buttons: skip, submit, update
-                    "submit",  // submit button on controls
-                    "completions",  // show completions
-                    "side-column", // entity
-                    /*
-                    "predictions:menu",
-                    "completions:add-new",
-                    "completions:delete",
-                    "completions:set-groundtruth",
-                    "completions:menu",
-                    */
-                ],
-                apiCalls: true,
-                debug: true,
+                supports: {{ (( context.label_studio and context.label_studio.supports) or ["predictions", "check-empty", "next:load"]) | safe }},
+                interfaces: {{ (( context.label_studio and context.label_studio.interfaces) or ["basic", "load", "controls", "submit", "completions"]) | safe }},
+                //"side-column", // entity
+                apiCalls: true
             });
     }
 </script>
