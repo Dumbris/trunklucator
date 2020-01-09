@@ -1,4 +1,0 @@
-matplotlib==3.0.3
-modAL==0.3.4
-numpy==1.16.2
-scikit-learn==0.20.3
