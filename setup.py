@@ -25,6 +25,7 @@ setup(
     license='Apache License 2.0',
     description=('Easy plugable UI for your experiments with data and machine learning'),
     long_description=long_description,
+    long_description_content_type='text/markdown',
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
     install_requires=install_requires,
