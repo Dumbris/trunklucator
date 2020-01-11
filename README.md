@@ -22,7 +22,7 @@ For full examples see `examples/quickstart` directory
 | HTML page annotation | <a href="/screenshots/ner_html.png?raw=true"><img src="/screenshots/ner_html.png?raw=true" align="left" height="48" width="48"></a>       | [examples/quickstart/ner_html.py](examples/quickstart/ner_html.py)      |
 
 
-Trunklucator is the best when you need to represent complex data like image, formatted text, video or sound to the user and ask the user to label/annotate this data. After a user's action, you immediately are able to use this data in your pipeline.  Trunklucator works well together with active learning (see example [examples/pytorch_active_learning/](examples/pytorch_active_learning/)).
+Trunklucator is the best when you need to represent complex data like image, formatted text, video or sound to the user and ask the user to label/annotate this data. After a user's action, you immediately are able to use this data in your pipeline.  Trunklucator works well together with active learning (see example [https://github.com/Dumbris/pytorch_active_learning/active_learning_basics.py](https://github.com/Dumbris/pytorch_active_learning/blob/fb01780cc45de71fa2476db7b3ece3e333768ab4/active_learning_basics.py#L144)).
 
 ## Installation
 
