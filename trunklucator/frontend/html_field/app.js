@@ -18,9 +18,7 @@ const wsVue = new Vue({
     },
     computed: {
         buttons: function() {
-            return (this.data.meta || {}).buttons || [
-                ["Skip", -1, 13]
-            ]
+            return (this.data.meta || {}).buttons || window._buttons
         }
     },
     created() {

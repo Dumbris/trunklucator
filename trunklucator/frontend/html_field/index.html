@@ -9,6 +9,9 @@
     <script type="module" src="lib/onmessage.js" defer></script>
     <script type="module" src="lib/reconnecting-websocket.js" defer></script>
     <script type="module" src="app.js"></script>
+    <script type="module">
+        window._buttons = {{ ((context.buttons) or [{'label':'Skip (space)', 'value':-1, 'shortcut':"['space']"}]) | safe }};
+    </script>
 </head>
 <body>
     <div id="app" class="container">
@@ -19,9 +22,9 @@
       <main class="site-content">
         <!-- Main content -->
         <div class="content" v-html="data.x.html"></div>
-        {% for button in context.buttons %}
-              <button v-shortkey.once="{{ button.shortcut }}" @shortkey="send('{{ button.value }}')" v-on:click="send('{{ button.value }}')">{{ button.label }}</button>
-        {% endfor %}
+        <div v-if="buttons">
+              <button v-for="button in buttons" v-shortkey.once="button.shortcut" @shortkey="send(button.value)" :key="button.label" v-on:click="send(button.value)">[[ button.label ]]</button>
+        </div>
         <div v-if="update">
             <div v-html="update.x.html"></div>
         </div>
