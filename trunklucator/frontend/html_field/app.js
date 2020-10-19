@@ -26,7 +26,7 @@ const wsVue = new Vue({
             // This code will run on startup
         self.websocket = null
 
-        const URL = "ws://" + location.host + "/trunklucator/v1.0"
+        const URL = ((location.protocol === "https:") ? "wss://" : "ws://") + location.host + "/trunklucator/v1.0"
         ReconnectingWebSocket(self, URL)
 
         //attache keyup event listener
