@@ -20,7 +20,7 @@ with open('README.md') as f:
 setup(
     name='trunklucator',
     python_requires='>3.6.0',
-    version='1.1.6',
+    version='1.1.7',
     url='https://github.com/Dumbris/trunklucator',
     license='Apache License 2.0',
     description=('Easy plugable UI for your experiments with data and machine learning'),
