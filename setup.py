@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 install_requires = [
     'jinja2',
-    'aiohttp<=3.5',
+    'aiohttp',
     'aiohttp_jinja2',
 ]
 
